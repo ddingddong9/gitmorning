@@ -4,7 +4,7 @@ cask "gitmorning" do
 
   url "https://github.com/ddingddong9/homebrew-gitmorning/releases/download/v#{version.csv.first}/GitMorning-#{version.csv.first}-arm64.zip"
   name "GitMorning"
-  desc "Read GitHub Trending with free on-device Korean summaries"
+  desc "Explore GitHub Trending and read original descriptions"
   homepage "https://github.com/ddingddong9/homebrew-gitmorning"
 
   livecheck do
