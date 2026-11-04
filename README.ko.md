@@ -15,7 +15,7 @@
 
 [English](README.md) · **한국어**
 
-<img src="docs/screenshot-ko.png" alt="오늘의 트렌드를 보여주는 GitMorning" width="820" />
+<img src="docs/demo.gif" alt="13초로 보는 GitMorning: 메뉴 막대 아침 브리핑과 메인 창" width="820" />
 
 </div>
 
@@ -60,6 +60,8 @@ Apple Silicon 맥, macOS 14 이상에서 동작합니다.
 > 아직 Apple 공증을 받지 않아 첫 실행 때 macOS가 막을 수 있습니다. **시스템 설정 → 개인정보 보호 및 보안**에서 **그래도 열기**를 눌러 주세요.
 
 ## 사용법
+
+<img src="docs/screenshot-ko.png" alt="오늘의 트렌드를 보여주는 GitMorning" width="820" />
 
 GitMorning을 열고 **오늘의 트렌드**에서 프로젝트를 누르세요. **설정 → 아침 브리핑 → 로그인 시 열기**를 켜 두면 매일 아침 새 브리핑이 준비됩니다.
 

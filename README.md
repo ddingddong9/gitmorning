@@ -15,7 +15,7 @@ See what's new and rising today, read what each project does in your language, a
 
 **English** · [한국어](README.ko.md)
 
-<img src="docs/screenshot.png" alt="GitMorning showing today's trending projects" width="820" />
+<img src="docs/demo.gif" alt="GitMorning in 13 seconds: the morning brief in the menu bar, then the main window" width="820" />
 
 </div>
 
@@ -60,6 +60,8 @@ Requires macOS 14 or later on Apple Silicon.
 > GitMorning is not notarized by Apple yet, so macOS may block the first launch. Open **System Settings → Privacy & Security** and choose **Open Anyway**.
 
 ## Usage
+
+<img src="docs/screenshot.png" alt="GitMorning showing today's trending projects" width="820" />
 
 Open GitMorning, pick **Today's Trending**, and click a project. Turn on **Settings → Morning brief → Open at login** to get a fresh brief every morning.
 
