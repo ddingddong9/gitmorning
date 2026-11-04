@@ -1,11 +1,48 @@
-<p align="center"><img src="https://github.com/ddingddong9/gitmorning/releases/download/v0.3.0/icon.png" alt="GitMorning" width="112" /></p>
-<h1 align="center">GitMorning</h1>
-<p align="center"><strong>Discover what’s next.</strong><br />A native Mac app for reading GitHub Trending</p>
-<p align="center"><strong>English</strong> · <a href="README.ko.md">한국어</a></p>
+<div align="center">
 
----
+<img src="https://github.com/ddingddong9/gitmorning/releases/download/v0.3.0/icon.png" alt="GitMorning" width="96" />
 
-See which open-source projects are trending, read what they do, and save the ones you want to try later. No account, API key, or subscription.
+# GitMorning
+
+**Your morning digest of GitHub Trending, right in the Mac menu bar.**
+
+See what's new and rising today, read what each project does in your language, and save the tools you want to try.
+
+[![Latest release](https://img.shields.io/github/v/release/ddingddong9/gitmorning?label=release)](https://github.com/ddingddong9/gitmorning/releases/latest)
+[![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](#install)
+[![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-555)](#install)
+[![Downloads](https://img.shields.io/github/downloads/ddingddong9/gitmorning/total?label=downloads)](https://github.com/ddingddong9/gitmorning/releases)
+
+**English** · [한국어](README.ko.md)
+
+<img src="docs/screenshot.png" alt="GitMorning showing today's trending projects" width="820" />
+
+</div>
+
+## Why GitMorning?
+
+Checking [GitHub Trending](https://github.com/trending) every day is easy to forget, and the list doesn't tell you what changed since yesterday. GitMorning does that part for you:
+
+- ☀️ **A morning brief.** Once a day it lists only the projects that are **new or climbing** since yesterday.
+- 🌐 **In your language.** Descriptions are translated on your Mac, so a Chinese or Japanese README summary reads in English or Korean.
+- 🔖 **Remember what caught your eye.** Save projects with a note and a status (*Try later → Testing → In use*), even after they drop off Trending.
+- 🔒 **Nothing to set up.** No account, API key, or subscription. Your data stays on your Mac.
+
+## Features
+
+<img src="docs/morning-brief.png" alt="Morning brief in the menu bar" width="300" align="right" />
+
+- **Morning brief** in the menu bar, with an optional notification at the time you choose
+- **Daily & weekly Trending** with original rank, total stars, and growth
+- **Languages:** all, Python, TypeScript, JavaScript, Swift, Go, Rust
+- **Since last visit**, unread, and hidden filters
+- **Automatic translation** of descriptions with Apple's on-device translation (macOS 15+)
+- **README preview** without leaving the app
+- **Korean explanations (optional)** generated on-device with Apple Intelligence (macOS 26+)
+- **Search**, light & dark mode, larger text, keyboard shortcuts
+- **In-app updates** you approve
+
+<br clear="right" />
 
 ## Install
 
@@ -16,17 +53,14 @@ brew install --cask gitmorning
 
 Or download the ZIP from the [latest release](https://github.com/ddingddong9/gitmorning/releases/latest) and move **GitMorning.app** to Applications.
 
-- macOS 14 or later, Apple Silicon
-- This preview is not notarized yet, so macOS may block the first launch. Choose **System Settings → Privacy & Security → Open Anyway**.
+Requires macOS 14 or later on Apple Silicon.
 
-## Features
+> [!NOTE]
+> GitMorning is not notarized by Apple yet, so macOS may block the first launch. Open **System Settings → Privacy & Security** and choose **Open Anyway**.
 
-- **Daily and weekly Trending:** original rank, total stars, and growth for the period
-- **Saved projects:** keep what a project looked like even after it leaves Trending
-- **Search and language lists:** Python, TypeScript, JavaScript, Swift, Go, Rust
-- **Korean explanations (optional):** an on-device summary of the README, only when you ask. Needs macOS 26 and Apple Intelligence
-- **Light and dark mode, larger text**
-- **In-app updates:** you are told about a new version and choose when to install
+## Usage
+
+Open GitMorning, pick **Today's Trending**, and click a project. Turn on **Settings → Morning brief → Open at login** to get a fresh brief every morning.
 
 | Shortcut | Action |
 | --- | --- |
@@ -36,20 +70,12 @@ Or download the ZIP from the [latest release](https://github.com/ddingddong9/git
 | `⌘R` | Refresh |
 | `⌘,` | Settings |
 
-## Updates
-
-The app checks for updates on its own. If you installed with Homebrew, you can also run:
-
-```sh
-brew upgrade --cask gitmorning
-```
+Update from the app when it asks, or with `brew upgrade --cask gitmorning`.
 
 ## Privacy
 
-Saved projects, notes, and explanations stay on your Mac. No ads or usage tracking.
+Saved projects, notes, translations, and explanations stay on your Mac. No account, ads, or analytics. Lists come from a public feed in this repository that is refreshed hourly from GitHub Trending (`feed/`), with GitHub itself as a fallback.
 
-## This repository
+## Feedback
 
-Release downloads, the Homebrew cask, and the shared Trending data the app reads (`feed/`, refreshed hourly). The app source is kept separately.
-
-Report bugs or suggest features in [Issues](https://github.com/ddingddong9/gitmorning/issues).
+Found a bug or have an idea? [Open an issue](https://github.com/ddingddong9/gitmorning/issues). If GitMorning helps you, a ⭐ helps others find it.
