@@ -48,6 +48,7 @@ Checking [GitHub Trending](https://github.com/trending) every day is easy to for
 
 ```sh
 brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
+brew trust ddingddong9/gitmorning   # Homebrew 7+ asks you to trust a third-party tap once
 brew install --cask gitmorning
 ```
 

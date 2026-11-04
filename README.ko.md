@@ -48,6 +48,7 @@
 
 ```sh
 brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
+brew trust ddingddong9/gitmorning   # Homebrew 7 이상은 외부 tap을 한 번 신뢰해야 합니다
 brew install --cask gitmorning
 ```
 
