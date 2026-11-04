@@ -19,7 +19,7 @@ import urllib.request
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from collect import LANGUAGES, PERIODS, CollectionError, publish, request, snapshot, trending_url  # noqa: E402
 
-PUBLISHED = "https://ddingddong9.github.io/homebrew-gitmorning/v1/"
+PUBLISHED = "https://ddingddong9.github.io/gitmorning/v1/"
 
 
 def previous(name):
