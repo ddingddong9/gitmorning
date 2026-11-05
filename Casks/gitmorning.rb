@@ -1,6 +1,6 @@
 cask "gitmorning" do
-  version "0.5.2,7"
-  sha256 "931531f280d12b1206ad479b9f627165f6d82f6bc1e41e75564d2f87e47f4762"
+  version "0.5.3,8"
+  sha256 "2ba45274bc3f02b32decf34c93fc193a682c545c675ad35200ed16f11fb86cb3"
 
   url "https://github.com/ddingddong9/gitmorning/releases/download/v#{version.csv.first}/GitMorning-#{version.csv.first}-arm64.zip"
   name "GitMorning"
