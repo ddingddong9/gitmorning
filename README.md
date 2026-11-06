@@ -12,6 +12,7 @@ See what's new and rising today, read what each project does in your language, a
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](#install)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-555)](#install)
 [![Downloads](https://img.shields.io/github/downloads/ddingddong9/gitmorning/total?label=downloads)](https://github.com/ddingddong9/gitmorning/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 **English** · [한국어](README.ko.md)
 
@@ -79,6 +80,28 @@ Update from the app when it asks, or with `brew upgrade --cask gitmorning`.
 
 Saved projects, notes, translations, and explanations stay on your Mac. No account, ads, or analytics. Lists come from a public feed in this repository that is refreshed hourly from GitHub Trending (`feed/`), with GitHub itself as a fallback.
 
+## Build from source
+
+GitMorning is a SwiftPM app (no Xcode project). With Xcode or the Command Line Tools on macOS 14+:
+
+```sh
+git clone https://github.com/ddingddong9/gitmorning && cd gitmorning
+GITMORNING_CORE_ONLY=1 swift build        # app without the updater
+zsh scripts/build-app.sh                   # GitMorning.app in dist/
+python3 -m unittest discover -s pipeline/tests
+```
+
+| Path | What it is |
+| --- | --- |
+| `Sources/GitMorningCore` | Parsing, feed and README readers, morning brief, caches (no UI) |
+| `Sources/GitMorning` | SwiftUI app, menu bar brief, settings |
+| `pipeline/` | Python Trending collector, README excerpts, canary |
+| `feed/` | Builds the shared feed published to GitHub Pages |
+| `scripts/` | App bundle, release, and `check-*.swift` checks |
+| `Casks/` | Homebrew cask |
+
+More in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Feedback
 
-Found a bug or have an idea? [Open an issue](https://github.com/ddingddong9/gitmorning/issues). If GitMorning helps you, a ⭐ helps others find it.
+Found a bug or have an idea? [Open an issue](https://github.com/ddingddong9/gitmorning/issues) or send a pull request. GitMorning is [MIT-licensed](LICENSE). If GitMorning helps you, a ⭐ helps others find it.

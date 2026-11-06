@@ -22,8 +22,8 @@ import sys
 import time
 import urllib.request
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from collect import LANGUAGES, PERIODS, CollectionError, publish, readme_excerpt, readme_markdown, request, snapshot, trending_url  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from pipeline.collect import LANGUAGES, PERIODS, CollectionError, publish, readme_excerpt, readme_markdown, request, snapshot, trending_url  # noqa: E402
 import hashlib  # noqa: E402
 
 PUBLISHED = "https://ddingddong9.github.io/gitmorning/v1/"

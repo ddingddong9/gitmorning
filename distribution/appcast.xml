@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>GitMorning Updates</title>
+    <link>https://github.com/ddingddong9/gitmorning</link>
+    <item>
+      <title>GitMorning 0.5.5</title>
+      <pubDate>Thu, 05 Nov 2026 01:02:21 +0000</pubDate>
+      <description>GitMorning 0.5.5 — Steadier shared lists
+
+- GitMorning keeps using the shared Trending list for up to 8 hours instead of 3, so README excerpts stay visible and fewer requests go to GitHub from your Mac.
+- Bundled Trending lists refreshed.
+
+공용 목록을 8시간까지 사용해 README 발췌가 더 안정적으로 표시되고 GitHub 직접 요청이 줄어듦
+
+Apple Silicon · macOS 14+. This preview is not Apple-notarized yet; macOS may ask you to approve the first launch.
+</description>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>0.5.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <enclosure url="https://github.com/ddingddong9/gitmorning/releases/download/v0.5.5/GitMorning-0.5.5-arm64.zip" length="2926629" type="application/octet-stream" sparkle:edSignature="E4B0X4GJFP+3P8J4Gl5+5WNIRsMfbke0jpMgOvjv0BJ+Rh9K3pBhJDlz9ONfiNn/qkf9YzpMnJ38oBIgep4YBQ==" />
+    </item>
+  </channel>
+</rss>

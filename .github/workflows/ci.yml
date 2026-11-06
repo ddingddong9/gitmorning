@@ -1,0 +1,123 @@
+name: CI
+on:
+  # Every change reaches main through a pull request, which already ran these checks,
+  # so main pushes do not run them again.
+  # Run it by hand on main when needed.
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  changes:
+    # Decides whether the macOS job is needed: only when the app, its checks, or this workflow changed.
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - id: diff
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          printf '%s\n' "$files"
+          if printf '%s\n' "$files" | grep -qE '^(Sources/|Tests/|Resources/|scripts/|pipeline/|Package\.(swift|resolved)$|\.github/workflows/ci\.yml$)'; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+          fi
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s pipeline/tests -v
+      - run: python -m unittest discover -s scripts/tests -v
+  live-collection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify actual daily and weekly Trending pages
+        run: |
+          python -m pipeline.collect --period daily --language all
+          python -m pipeline.collect --period weekly --language all
+      - uses: actions/upload-artifact@v6
+        with:
+          name: actual-trending-snapshots
+          path: pipeline/output/*.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Export Git history for restricted-network development
+        run: git bundle create gitmorning.bundle --all
+      - uses: actions/upload-artifact@v6
+        with:
+          name: gitmorning-source-history
+          path: gitmorning.bundle
+          retention-days: 7
+  macos:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Verify Python to Swift data contract
+        run: |
+          python3 -m pipeline.collect --html pipeline/tests/fixtures/trending.html
+          mkdir -p .build
+          swiftc Sources/GitMorningCore/TrendSnapshot.swift Sources/GitMorningCore/SnapshotDate.swift scripts/check-contract.swift -o .build/check-contract
+          .build/check-contract pipeline/output/daily-all.json
+      - name: Check Swift and Python Trending parsers agree
+        run: |
+          swiftc Sources/GitMorningCore/*.swift scripts/check-parity.swift -o .build/check-parity
+          .build/check-parity
+          python3 scripts/generate-html-entities.py
+          git diff --exit-code Sources/GitMorningCore/HTMLEntities.swift
+          mkdir -p .build/live
+          for period in daily weekly; do
+            curl -fsS -A "GitMorning CI (parser parity)" -H "Accept: text/html" "https://github.com/trending?since=$period" -o ".build/live/$period.html"
+            python3 -m pipeline.collect --html ".build/live/$period.html" --period "$period" --output .build/live
+            .build/check-parity ".build/live/$period.html" "$period" ".build/live/$period-all.json"
+          done
+      - name: Check native Trending parsing and local discovery storage
+        run: |
+          swiftc Sources/GitMorningCore/*.swift scripts/check-discovery.swift -o .build/check-discovery
+          .build/check-discovery
+          swiftc Sources/GitMorningCore/*.swift scripts/check-translations.swift -o .build/check-translations
+          .build/check-translations
+          swiftc Sources/GitMorningCore/*.swift scripts/check-brief.swift -o .build/check-brief
+          .build/check-brief
+          swiftc Sources/GitMorningCore/*.swift scripts/check-readme.swift -o .build/check-readme
+          .build/check-readme
+          swiftc Sources/GitMorningCore/*.swift scripts/check-source.swift -o .build/check-source
+          .build/check-source
+          swiftc Sources/GitMorningCore/*.swift scripts/check-core.swift -o .build/check-core
+          .build/check-core
+          swiftc Sources/GitMorningCore/*.swift scripts/check-readme-variants.swift -o .build/check-readme-variants
+          .build/check-readme-variants
+      - run: swift test --disable-sandbox
+      - name: Include a current real snapshot in the app build
+        run: |
+          python3 -m pipeline.collect --period daily --output Sources/GitMorning/Resources/Snapshots
+          python3 -m pipeline.collect --period weekly --output Sources/GitMorning/Resources/Snapshots
+      - run: zsh scripts/build-app.sh
+      - name: Package app preserving executable permissions
+        run: ditto -c -k --sequesterRsrc --keepParent dist/GitMorning.app dist/GitMorning.zip
+      - uses: actions/upload-artifact@v6
+        with:
+          name: GitMorning-development-build
+          path: dist/GitMorning.zip
+          retention-days: 7
