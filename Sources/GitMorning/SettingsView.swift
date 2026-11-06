@@ -20,6 +20,9 @@ struct SettingsView: View {
     @AppStorage("interestLanguages") private var interestLanguages = ""
     @AppStorage("interestKeywords") private var interestKeywords = ""
     @ViewState<String> private var keywordDraft = ""
+    @AppStorage("releaseChecks") private var releaseChecks = true
+    @AppStorage("releaseNotification") private var releaseNotification = false
+    @ViewState<String> private var releaseProblem = ""
     @AppStorage("briefMinute") private var briefMinute = MorningSchedule.defaultMinute
     @ViewState<String> private var notificationProblem = ""
     @ViewState<Bool> private var opensAtLogin = LoginItem.isEnabled
@@ -116,6 +119,7 @@ struct SettingsView: View {
             } header: { Text(ui("Morning brief")) }
               footer: { Text(ui("Once a day after this time, GitMorning compares today’s Trending with yesterday’s brief and lists what is new or rising. It runs only while GitMorning is open; the menu bar keeps it open after you close the window. No account or server.")) }
             interestsSection
+            releasesSection
         }.formStyle(.grouped)
     }
 
@@ -125,6 +129,23 @@ struct SettingsView: View {
         if on { chosen.append(language) } else { chosen.removeAll { $0 == language } }
         interestLanguages = Interests(languages: Interests.languageChoices.filter { chosen.contains($0) }).storedLanguages
     }
+    private var releasesSection: some View {
+        Section {
+            Toggle(ui("Check saved projects for new releases"), isOn: $releaseChecks).accessibilityIdentifier("settingsReleaseChecks")
+            Toggle(ui("Notify me about new releases"), isOn: $releaseNotification)
+                .disabled(!releaseChecks).accessibilityIdentifier("settingsReleaseNotification")
+                .onChange(of: releaseNotification) { _, enabled in
+                    guard enabled else { releaseProblem = ""; return }
+                    Task {
+                        if await MorningBriefModel.requestNotificationPermission() { releaseProblem = "" }
+                        else { releaseNotification = false; releaseProblem = "Notifications are off for GitMorning. Allow them in System Settings → Notifications." }
+                    }
+                }
+            if !releaseProblem.isEmpty { Text(ui(releaseProblem)).foregroundStyle(.orange) }
+        } header: { Text(ui("Saved projects")) }
+          footer: { Text(ui("Twice a day while GitMorning is open, it reads each saved project’s public release page on GitHub. Nightly, beta, and release-candidate builds are skipped. A new release shows in Saved and, if you turn it on, as a notification.")) }
+    }
+
     private var interestsSection: some View {
         Section {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 4), alignment: .leading, spacing: 8) {

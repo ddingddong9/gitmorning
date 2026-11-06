@@ -8,6 +8,7 @@ struct ContentView: View {
     private func ui(_ source: String) -> String { (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).text(source) }
     @Environment(\.appTypography) private var typography
     @Bindable var state: AppState
+    let releases: ReleaseWatcher
     @AppStorage("feedBaseURL") private var baseURL = ""
     @AppStorage("autoTranslateDescriptions") private var autoTranslateDescriptions = true
     @AppStorage("interestLanguages") private var interestLanguages = ""
@@ -68,6 +69,10 @@ struct ContentView: View {
                             Label(ui(feed.title), systemImage: feed.symbol).font(typography.navigation)
                             if feed == .saved && state.savedCount > 0 {
                                 Spacer()
+                                if releases.unseenCount > 0 {
+                                    Image(systemName: "shippingbox.fill").foregroundStyle(.orange).font(typography.metadata)
+                                        .help(String(format: ui("%d saved projects have a new release"), releases.unseenCount))
+                                }
                                 Text(state.savedCount.formatted()).foregroundStyle(.secondary).font(typography.listBody)
                             }
                         }.tag(feed)
@@ -167,7 +172,7 @@ struct ContentView: View {
             } else {
                 List(selection: $state.selectedID) {
                     ForEach(state.visible) { repo in
-                        RepositoryRow(repository: repo, rank: state.feed == .saved ? nil : state.repositories.firstIndex(of: repo).map { $0 + 1 }, feed: state.feed, saved: state.isSaved(repo), reading: state.reading(repo.id), change: state.rankChange(repo.id), streak: state.feed == .daily ? state.streak(repo.id) : nil, translatedDescription: autoTranslateDescriptions ? translations.translation(repo, target: interfaceLanguage) : nil)
+                        RepositoryRow(repository: repo, rank: state.feed == .saved ? nil : state.repositories.firstIndex(of: repo).map { $0 + 1 }, feed: state.feed, saved: state.isSaved(repo), reading: state.reading(repo.id), change: state.rankChange(repo.id), streak: state.feed == .daily ? state.streak(repo.id) : nil, newRelease: state.feed == .saved ? releases.unseen(repo.id) : nil, translatedDescription: autoTranslateDescriptions ? translations.translation(repo, target: interfaceLanguage) : nil)
                             .tag(repo.id)
                             .contextMenu {
                                 Button(ui(state.isSaved(repo) ? "Unsave" : "Save")) { state.toggleBookmark(repo) }
@@ -200,6 +205,9 @@ struct ContentView: View {
     @ViewBuilder private var detailColumn: some View {
         if let selected = state.selected {
             RepositoryDetail(history: state.feed == .daily ? state.history : nil,
+                             release: state.isSaved(selected) ? releases.latest(selected.id) : nil,
+                             releaseIsNew: releases.unseen(selected.id) != nil,
+                             releaseSeen: { releases.markSeen(selected.id) },
                              repository: selected,
                              translatedDescription: autoTranslateDescriptions ? translations.translation(selected, target: interfaceLanguage) : nil,
                              translationMessage: autoTranslateDescriptions ? translations.message(selected, target: interfaceLanguage) : nil,
@@ -261,6 +269,8 @@ private struct RepositoryRow: View {
     let change: RankChange?
     /// Days in a row on today's list; shown from the second day.
     let streak: Int?
+    /// A saved project's release the user has not seen yet.
+    let newRelease: ReleaseInfo?
     let translatedDescription: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -286,7 +296,9 @@ private struct RepositoryRow: View {
                     Label(String(format: ui("%d days"), streak), systemImage: "flame").labelStyle(.titleAndIcon).foregroundStyle(.orange)
                         .help(String(format: ui("On today’s list %d days in a row"), streak))
                 }
-                if saved { Image(systemName: "bookmark.fill").accessibilityLabel(ui("Saved")) }
+                if let newRelease {
+                    Label(String(format: ui("New release %@"), newRelease.tag), systemImage: "shippingbox").foregroundStyle(.orange).lineLimit(1)
+                } else if saved { Image(systemName: "bookmark.fill").accessibilityLabel(ui("Saved")) }
                 Spacer()
                 Text(ui(repository.gain(for: feed).map { "+" + $0.formatted() } ?? "Growth unavailable"))
                     .monospacedDigit()
@@ -298,6 +310,9 @@ private struct RepositoryRow: View {
 
 private struct RepositoryDetail: View {
     let history: TrendHistory?
+    let release: ReleaseInfo?
+    let releaseIsNew: Bool
+    let releaseSeen: () -> Void
     @AppStorage("interfaceLanguage") private var interfaceLanguage = "en"
     private func ui(_ source: String) -> String { (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).text(source) }
     private var locale: Locale { (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).locale }
@@ -332,6 +347,23 @@ private struct RepositoryDetail: View {
             if let translationMessage { Text(ui(translationMessage)).font(typography.metadata).foregroundStyle(.secondary) }
         }
     }
+    /// A saved project's latest stable release; seen once the user leaves this project.
+    @ViewBuilder private var releaseSection: some View {
+        if let release {
+            section("Latest release", badge: releaseIsNew ? "New" : nil) {
+                HStack(spacing: 8) {
+                    Text(release.tag).font(typography.listTitle)
+                    if release.title != release.tag && !release.title.isEmpty { Text(release.title).foregroundStyle(.secondary).lineLimit(1) }
+                    if let date = SnapshotDate.parse(release.updated) {
+                        Text(date.formatted(.dateTime.year().month(.abbreviated).day().locale(locale))).foregroundStyle(.secondary)
+                    }
+                }
+                if let url = URL(string: release.url) { Link(ui("Release notes on GitHub"), destination: url).font(typography.action) }
+            }
+            .onDisappear { if releaseIsNew { releaseSeen() } }
+        }
+    }
+
     /// How long the project has been on this daily list and its rank on each of the last seven days.
     @ViewBuilder private var trendHistorySection: some View {
         if let history, history.days.count >= 2, history.streak(repository.id) > 0 {
@@ -403,6 +435,7 @@ private struct RepositoryDetail: View {
                 descriptionSection
                 readmeExcerptSection
                 trendHistorySection
+                releaseSection
                 if !repository.features.isEmpty { section("Features") {
                     ForEach(repository.features, id: \.self) { feature in
                         HStack(alignment: .top, spacing: 8) { Text(ui("•")); Text(feature) }

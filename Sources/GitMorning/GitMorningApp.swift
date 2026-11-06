@@ -27,6 +27,7 @@ struct GitMorningApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @ViewState<AppState> private var state: AppState
     @ViewState<MorningBriefModel> private var brief: MorningBriefModel
+    @ViewState<ReleaseWatcher> private var releases: ReleaseWatcher
     @AppStorage("showMenuBar") private var showMenuBar = true
     @StateObject private var updater = AppUpdater()
 
@@ -35,6 +36,10 @@ struct GitMorningApp: App {
         let state = AppState(), brief = MorningBriefModel()
         brief.hiddenIDs = { [weak state] in state?.hiddenIDs ?? [] }
         brief.start()
+        let releases = ReleaseWatcher()
+        releases.savedIDs = { [weak state] in state?.bookmarks.map(\.repositoryID) ?? [] }
+        releases.start()
+        _releases = ViewState(initialValue: releases)
         #if DEBUG
         DebugSnapshot.runIfRequested(brief: brief, state: state)
         #endif
@@ -48,7 +53,7 @@ struct GitMorningApp: App {
 
     var body: some Scene {
         Window("GitMorning", id: "main") {
-            ContentView(state: state)
+            ContentView(state: state, releases: releases)
                 .environment(\.appTypography, AppTypography(size: ReadingSize.fromStored(readingSize)))
                 .environment(\.locale, (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).locale)
                 .preferredColorScheme(Appearance.fromStored(appearance).scheme)
