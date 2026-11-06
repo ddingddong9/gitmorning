@@ -1,8 +1,12 @@
-GitMorning 0.5.5 — Steadier shared lists
+GitMorning 0.5.6 — Your interests, trending streaks, and release alerts
 
-- GitMorning keeps using the shared Trending list for up to 8 hours instead of 3, so README excerpts stay visible and fewer requests go to GitHub from your Mac.
+- Interests: pick languages and keywords in Settings → Morning brief. Matching projects come first in the morning brief with a ★, and Today's Trending can show only them.
+- Trending streaks: projects on Today's Trending for two or more days in a row show 🔥 "N days", and project details show their rank for the last 7 days.
+- Release alerts: GitMorning checks your saved projects for new stable releases twice a day (nightly and beta builds skipped) and marks them in Saved. Notifications are optional.
+- Export Saved as Markdown: copy or save your saved projects, grouped by status with notes.
+- Security: tighter README preview and release checks.
 - Bundled Trending lists refreshed.
 
-공용 목록을 8시간까지 사용해 README 발췌가 더 안정적으로 표시되고 GitHub 직접 요청이 줄어듦
+관심사 맞춤 아침 브리핑(★) · 연속 트렌딩 "N일째"와 최근 7일 순위 · 보관한 프로젝트 새 릴리스 알림 · 보관함 마크다운 내보내기 · 보안 보완
 
 Apple Silicon · macOS 14+. This preview is not Apple-notarized yet; macOS may ask you to approve the first launch.
