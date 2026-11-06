@@ -4,22 +4,26 @@
     <title>GitMorning Updates</title>
     <link>https://github.com/ddingddong9/gitmorning</link>
     <item>
-      <title>GitMorning 0.5.5</title>
-      <pubDate>Thu, 05 Nov 2026 01:02:21 +0000</pubDate>
-      <description>GitMorning 0.5.5 — Steadier shared lists
+      <title>GitMorning 0.5.6</title>
+      <pubDate>Fri, 06 Nov 2026 04:44:29 +0000</pubDate>
+      <description>GitMorning 0.5.6 — Your interests, trending streaks, and release alerts
 
-- GitMorning keeps using the shared Trending list for up to 8 hours instead of 3, so README excerpts stay visible and fewer requests go to GitHub from your Mac.
+- Interests: pick languages and keywords in Settings → Morning brief. Matching projects come first in the morning brief with a ★, and Today's Trending can show only them.
+- Trending streaks: projects on Today's Trending for two or more days in a row show 🔥 "N days", and project details show their rank for the last 7 days.
+- Release alerts: GitMorning checks your saved projects for new stable releases twice a day (nightly and beta builds skipped) and marks them in Saved. Notifications are optional.
+- Export Saved as Markdown: copy or save your saved projects, grouped by status with notes.
+- Security: tighter README preview and release checks.
 - Bundled Trending lists refreshed.
 
-공용 목록을 8시간까지 사용해 README 발췌가 더 안정적으로 표시되고 GitHub 직접 요청이 줄어듦
+관심사 맞춤 아침 브리핑(★) · 연속 트렌딩 "N일째"와 최근 7일 순위 · 보관한 프로젝트 새 릴리스 알림 · 보관함 마크다운 내보내기 · 보안 보완
 
 Apple Silicon · macOS 14+. This preview is not Apple-notarized yet; macOS may ask you to approve the first launch.
 </description>
-      <sparkle:version>10</sparkle:version>
-      <sparkle:shortVersionString>0.5.5</sparkle:shortVersionString>
+      <sparkle:version>11</sparkle:version>
+      <sparkle:shortVersionString>0.5.6</sparkle:shortVersionString>
       <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
       <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-      <enclosure url="https://github.com/ddingddong9/gitmorning/releases/download/v0.5.5/GitMorning-0.5.5-arm64.zip" length="2926629" type="application/octet-stream" sparkle:edSignature="E4B0X4GJFP+3P8J4Gl5+5WNIRsMfbke0jpMgOvjv0BJ+Rh9K3pBhJDlz9ONfiNn/qkf9YzpMnJ38oBIgep4YBQ==" />
+      <enclosure url="https://github.com/ddingddong9/gitmorning/releases/download/v0.5.6/GitMorning-0.5.6-arm64.zip" length="3050080" type="application/octet-stream" sparkle:edSignature="8OQibD20+Mf/20+50hb7S3ZiSUJN4RMdCe3HOO0Ri9TZDQ0HwQkeQxgNRDy29u+ZRxBtcVeidiWSa6WhTzAJBA==" />
     </item>
   </channel>
 </rss>
