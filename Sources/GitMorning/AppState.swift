@@ -18,6 +18,9 @@ final class AppState {
     private var visitedKeys = Set<String>()
     private(set) var bookmarks: [Bookmark] = []
     private(set) var snapshot: TrendSnapshot?
+    /// Daily rank history for the current daily list, when it describes the same day as the list.
+    private(set) var history: TrendHistory?
+    private let historyDirectory: URL
     private(set) var savedRepositories: [String: Repository] = [:]
     private(set) var isLoading = false
     private(set) var status = "Bundled snapshot"
@@ -41,6 +44,7 @@ final class AppState {
         catch { canSaveDiscovery = false; persistenceError = "Could not read reading history. Writes are paused to protect your notes." }
         storage = SavedCatalogStorage(url: base.appendingPathComponent("saved-catalog-v1.json"))
         cache = SnapshotCache(directory: base.appendingPathComponent("snapshots"))
+        historyDirectory = base.appendingPathComponent("snapshots")
         summaryStorage = LocalSummaryStorage(directory: base.appendingPathComponent("summaries"))
         do {
             if let saved = try storage.load() {
@@ -114,7 +118,37 @@ final class AppState {
         }
         recordVisit()
         restoreSummaries()
+        loadCachedHistory()
         selectVisible()
+    }
+
+    /// Days in a row the project has been on this daily list (from the shared feed's history), or nil.
+    func streak(_ id: String) -> Int? { history.map { $0.streak(id) }.flatMap { $0 > 0 ? $0 : nil } }
+
+    private func historyFile(_ key: SnapshotKey) -> URL { historyDirectory.appendingPathComponent(TrendHistory.filename(language: key.language)) }
+    private func useHistory(_ data: Data?, for key: SnapshotKey) {
+        let decoded = data.flatMap { try? TrendHistory.decode($0, language: key.language) }
+        history = decoded.flatMap { candidate in snapshot.map { candidate.matches(collectedAt: $0.collectedAt) } == true ? candidate : nil }
+    }
+    #if DEBUG
+    /// DebugSnapshot only: show a history file without touching the cache.
+    func debugUseHistory(_ data: Data) {
+        guard let key else { return }
+        history = (try? TrendHistory.decode(data, language: key.language))
+    }
+    #endif
+    private func loadCachedHistory() {
+        guard feed == .daily, let key else { history = nil; return }
+        useHistory(try? Data(contentsOf: historyFile(key)), for: key)
+    }
+    /// Fetches the shared feed's rank history for the daily list; failures leave the cached one.
+    private func refreshHistory(_ key: SnapshotKey, requestGeneration: Int) async {
+        guard key.period == "daily", let endpoint = try? FeedEndpoint(TrendingSource.sharedFeed),
+              let data = try? await SnapshotHTTPReader().loadHistory(language: key.language, endpoint: endpoint),
+              requestGeneration == generation, self.key == key else { return }
+        try? FileManager.default.createDirectory(at: historyDirectory, withIntermediateDirectories: true)
+        try? data.write(to: historyFile(key), options: .atomic)
+        useHistory(data, for: key)
     }
 
     private func restoreSummaries() {
@@ -144,6 +178,7 @@ final class AppState {
             recordVisit()
             restoreSummaries()
             selectVisible()
+            if baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { await refreshHistory(key, requestGeneration: requestGeneration) }
         } catch {
             guard !Task.isCancelled, requestGeneration == generation else { return }
             status = snapshot == nil ? "Could not load data. Check the address and connection." : "Refresh failed · showing the last valid snapshot."

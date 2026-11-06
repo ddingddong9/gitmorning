@@ -25,6 +25,7 @@ public struct FeedEndpoint: Sendable {
         baseURL = url
     }
     public func url(for key: SnapshotKey) -> URL { baseURL.appendingPathComponent(key.filename) }
+    public func url(file name: String) -> URL { baseURL.appendingPathComponent(name) }
 }
 
 public struct SnapshotCache {
@@ -72,6 +73,19 @@ public actor SnapshotHTTPReader {
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw SnapshotReadError.invalidHTTPResponse }
         guard data.count <= 3_000_000 else { throw SnapshotReadError.oversizedResponse }
         _ = try key.decode(data)
+        try Task.checkCancellation()
+        return data
+    }
+
+    /// The daily rank history for `language` from the shared feed, checked with `TrendHistory.decode`.
+    public func loadHistory(language: String, endpoint: FeedEndpoint) async throws -> Data {
+        var request = URLRequest(url: endpoint.url(file: TrendHistory.filename(language: language)))
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { throw SnapshotReadError.invalidHTTPResponse }
+        guard data.count <= 3_000_000 else { throw SnapshotReadError.oversizedResponse }
+        _ = try TrendHistory.decode(data, language: language)
         try Task.checkCancellation()
         return data
     }
