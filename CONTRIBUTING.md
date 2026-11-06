@@ -1,19 +1,45 @@
-# 개발 방법
+# Contributing to GitMorning
 
-- `main`: 확인된 동작을 유지하는 기준 브랜치.
-- `feat/<기능>`, `fix/<수정>`, `docs/<문서>`: 작업 브랜치.
-- 기능마다 이슈에 목적·완료 조건을 기록하고, PR에 최종 동작과 검증 결과를 적는다.
-- 작은 변경 단위로 `feat:`, `fix:`, `docs:`, `test:`, `chore:` 커밋을 남긴다.
-- PR은 CI 확인 후 병합한다. AI는 사용자 지시 없이 자동 병합하지 않는다.
-- 앱 바이너리·캐시·API 키·로컬 환경설정은 커밋하지 않는다.
-- 테스트 데이터는 실제 수집 결과와 구분한다. 외부 네트워크가 필요한 검증은 CI의 단위 테스트와 분리한다.
+Thanks for helping! Bug reports, ideas, and pull requests are all welcome. Korean or English is fine. (한국어로 작성해도 됩니다.)
 
-## 검증
+## Reporting a bug or idea
+
+Open an [issue](https://github.com/ddingddong9/gitmorning/issues/new/choose). For bugs, include your GitMorning version (Settings → Updates), macOS version, and what you expected to see.
+
+## Working on code
+
+GitMorning is a SwiftPM app with no Xcode project.
 
 ```sh
-python3 -m unittest discover -s pipeline/tests -v
-swift test --disable-sandbox
-zsh scripts/build-app.sh
+GITMORNING_CORE_ONLY=1 swift build              # app without the updater
+python3 -m unittest discover -s pipeline/tests  # collector, README excerpts, canary
+zsh scripts/build-app.sh                         # GitMorning.app in dist/
+swift test --disable-sandbox                     # needs Xcode (XCTest)
 ```
 
-XCTest가 없는 Command Line Tools 환경에서는 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)의 `check-*.swift` 절차를 사용한다. 기여한 코드는 저장소의 MIT 라이선스로 배포된다.
+With only the Command Line Tools, run the standalone checks instead, for example:
+
+```sh
+swiftc Sources/GitMorningCore/*.swift scripts/check-core.swift -o .build/check-core && .build/check-core
+```
+
+[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) lists every check and how to capture UI snapshots; [docs/discovery.md](docs/discovery.md) explains how features behave.
+
+## Pull requests
+
+- Branch from `main` (`feat/…`, `fix/…`, `docs/…`) and keep each PR to one change.
+- Use `feat:`, `fix:`, `docs:`, `test:`, `chore:` commit prefixes.
+- Describe what changes for the user and how you checked it. CI must pass before merging.
+- When you change the Trending parser, update both `pipeline/collect.py` and `Sources/GitMorningCore/TrendingReader.swift`, and the shared fixtures in `pipeline/tests/fixtures/parity/`.
+- Never commit app binaries, caches, API keys, or release signing keys (`.release-secrets/` is ignored).
+
+By contributing, you agree that your contribution is licensed under the [MIT License](LICENSE).
+
+---
+
+## 한국어 요약
+
+- 버그·아이디어는 이슈로, 코드 변경은 `main`에서 브랜치를 만들어 PR로 보내 주세요.
+- 트렌딩 파서를 바꾸면 Python(`pipeline/collect.py`)과 Swift(`TrendingReader.swift`), 공유 픽스처를 함께 고쳐 주세요.
+- 바이너리·캐시·API 키·서명 키는 커밋하지 않습니다.
+- 기여한 코드는 MIT 라이선스로 배포됩니다.

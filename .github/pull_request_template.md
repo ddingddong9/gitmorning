@@ -1,13 +1,12 @@
-## 변경 결과
+## What changes
 
-사용자가 어떤 상황에서 어떤 동작을 경험하는지 적습니다.
+What the user sees or what behaves differently.
 
-## 검증
+## How I checked it
 
-- [ ] 관련 테스트 실행
-- [ ] 실제 데이터와 샘플 데이터 구분 확인
-- [ ] 비밀키·생성 파일 미포함 확인
+- [ ] Relevant tests or `check-*.swift` scripts
+- [ ] No binaries, caches, keys, or signing files included
 
-## 남은 제약
+## Known limits
 
-알려진 제한이나 후속 작업을 적습니다.
+Anything left for later.
