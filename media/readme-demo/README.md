@@ -7,6 +7,7 @@ npm install
 npx remotion studio                    # preview and edit
 npx remotion render ReadmeDemo out/gitmorning-demo.mp4 --crf=20
 npx remotion render ReadmeDemo out/gitmorning-demo.gif --codec=gif --every-nth-frame=3 --scale=0.625
+npx remotion still SocialPreview ../../docs/social-preview.png   # GitHub social preview (1280×640)
 ```
 
 - `public/window.png`, `public/brief.png`: English dark screenshots from the DEBUG snapshot hook (`GITMORNING_SNAPSHOT_DIR`, see `Sources/GitMorning/DebugSnapshot.swift`).
