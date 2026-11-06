@@ -30,7 +30,7 @@ jobs:
           PERIOD: ${{ inputs.period }}
           LANGUAGE: ${{ inputs.language }}
         run: python -m pipeline.collect --period "$PERIOD" --language "$LANGUAGE"
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: trending-${{ inputs.period }}-${{ inputs.language }}
           path: pipeline/output/*.json

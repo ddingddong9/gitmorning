@@ -55,7 +55,7 @@ jobs:
         run: |
           python -m pipeline.collect --period daily --language all
           python -m pipeline.collect --period weekly --language all
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: actual-trending-snapshots
           path: pipeline/output/*.json
@@ -63,7 +63,7 @@ jobs:
           retention-days: 7
       - name: Export Git history for restricted-network development
         run: git bundle create gitmorning.bundle --all
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: gitmorning-source-history
           path: gitmorning.bundle
@@ -127,7 +127,7 @@ jobs:
       - run: zsh scripts/build-app.sh
       - name: Package app preserving executable permissions
         run: ditto -c -k --sequesterRsrc --keepParent dist/GitMorning.app dist/GitMorning.zip
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: GitMorning-development-build
           path: dist/GitMorning.zip
