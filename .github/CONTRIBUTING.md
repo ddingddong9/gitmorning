@@ -23,7 +23,7 @@ With only the Command Line Tools, run the standalone checks instead, for example
 swiftc Sources/GitMorningCore/*.swift scripts/check-core.swift -o .build/check-core && .build/check-core
 ```
 
-[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) lists every check and how to capture UI snapshots; [docs/discovery.md](docs/discovery.md) explains how features behave.
+[docs/DEVELOPMENT.md](../docs/DEVELOPMENT.md) lists every check and how to capture UI snapshots; [docs/discovery.md](../docs/discovery.md) explains how features behave.
 
 ## Pull requests
 
@@ -35,7 +35,7 @@ swiftc Sources/GitMorningCore/*.swift scripts/check-core.swift -o .build/check-c
 
 Found a security problem? Please report it privately as described in [SECURITY.md](SECURITY.md).
 
-By contributing, you agree that your contribution is licensed under the [MIT License](LICENSE).
+By contributing, you agree that your contribution is licensed under the [MIT License](../LICENSE).
 
 ---
 

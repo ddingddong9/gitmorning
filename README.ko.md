@@ -100,7 +100,7 @@ python3 -m unittest discover -s pipeline/tests
 | `scripts/` | 앱 번들·릴리스, `check-*.swift` 검사 |
 | `Casks/` | Homebrew Cask |
 
-자세한 내용은 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
+자세한 내용은 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), [CONTRIBUTING.md](.github/CONTRIBUTING.md)를 참고하세요.
 
 ## 피드백
 

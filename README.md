@@ -100,7 +100,7 @@ python3 -m unittest discover -s pipeline/tests
 | `scripts/` | App bundle, release, and `check-*.swift` checks |
 | `Casks/` | Homebrew cask |
 
-More in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), and [CONTRIBUTING.md](CONTRIBUTING.md).
+More in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), and [CONTRIBUTING.md](.github/CONTRIBUTING.md).
 
 ## Feedback
 
