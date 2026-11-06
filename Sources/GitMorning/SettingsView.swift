@@ -17,6 +17,9 @@ struct SettingsView: View {
     @ViewState<Bool> private var invalidAddress = false
     @AppStorage("showMenuBar") private var showMenuBar = true
     @AppStorage("briefNotification") private var briefNotification = false
+    @AppStorage("interestLanguages") private var interestLanguages = ""
+    @AppStorage("interestKeywords") private var interestKeywords = ""
+    @ViewState<String> private var keywordDraft = ""
     @AppStorage("briefMinute") private var briefMinute = MorningSchedule.defaultMinute
     @ViewState<String> private var notificationProblem = ""
     @ViewState<Bool> private var opensAtLogin = LoginItem.isEnabled
@@ -112,7 +115,31 @@ struct SettingsView: View {
                 if !notificationProblem.isEmpty { Text(ui(notificationProblem)).foregroundStyle(.orange) }
             } header: { Text(ui("Morning brief")) }
               footer: { Text(ui("Once a day after this time, GitMorning compares today’s Trending with yesterday’s brief and lists what is new or rising. It runs only while GitMorning is open; the menu bar keeps it open after you close the window. No account or server.")) }
+            interestsSection
         }.formStyle(.grouped)
+    }
+
+    private var selectedLanguages: Set<String> { Set(Interests(storedLanguages: interestLanguages, storedKeywords: "").languages) }
+    private func setLanguage(_ language: String, _ on: Bool) {
+        var chosen = Interests.languageChoices.filter { selectedLanguages.contains($0) }
+        if on { chosen.append(language) } else { chosen.removeAll { $0 == language } }
+        interestLanguages = Interests(languages: Interests.languageChoices.filter { chosen.contains($0) }).storedLanguages
+    }
+    private var interestsSection: some View {
+        Section {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 4), alignment: .leading, spacing: 8) {
+                ForEach(Interests.languageChoices, id: \.self) { language in
+                    Toggle(language, isOn: Binding(get: { selectedLanguages.contains(language) }, set: { setLanguage(language, $0) }))
+                        .toggleStyle(.checkbox)
+                }
+            }
+            TextField(ui("Keywords"), text: $keywordDraft, prompt: Text(ui("agent, terminal, database")))
+                .onAppear { keywordDraft = interestKeywords }
+                .onSubmit { interestKeywords = Interests(storedLanguages: "", storedKeywords: keywordDraft).storedKeywords; keywordDraft = interestKeywords }
+                .onChange(of: keywordDraft) { _, value in interestKeywords = Interests(storedLanguages: "", storedKeywords: value).storedKeywords }
+                .accessibilityIdentifier("settingsInterestKeywords")
+        } header: { Text(ui("Interests")) }
+          footer: { Text(ui("Projects in these languages, or with these words in their name, description, or README, come first in the morning brief and are marked with a star. Separate keywords with commas. Today’s Trending can also show only them.")) }
     }
 
     private var language: some View {

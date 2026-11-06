@@ -10,6 +10,8 @@ struct ContentView: View {
     @Bindable var state: AppState
     @AppStorage("feedBaseURL") private var baseURL = ""
     @AppStorage("autoTranslateDescriptions") private var autoTranslateDescriptions = true
+    @AppStorage("interestLanguages") private var interestLanguages = ""
+    @AppStorage("interestKeywords") private var interestKeywords = ""
     @ViewState<DescriptionTranslations> private var translations = DescriptionTranslations()
     @ViewState<Int> private var translationAttempt = 0
     @FocusState private var searchFocused: Bool
@@ -101,7 +103,8 @@ struct ContentView: View {
                     ForEach(["All languages", "Python", "TypeScript", "JavaScript", "Swift", "Go", "Rust"], id: \.self) { Text(ui($0)).tag($0) }
                 }.labelsHidden().help(ui("Language"))
                 Picker(ui("Show"), selection: $state.readingFilter) {
-                    ForEach(state.feed == .saved ? ["All projects", "Unread", "Hidden"] : ["All projects", "Since last visit", "Unread", "Hidden"], id: \.self) {
+                    ForEach((state.feed == .saved ? ["All projects", "Unread", "Hidden"] : ["All projects", "Since last visit", "Unread", "Hidden"])
+                            + (interestLanguages.isEmpty && interestKeywords.isEmpty ? [] : ["My interests"]), id: \.self) {
                         Text(ui($0)).tag($0)
                     }
                 }.labelsHidden().help(ui("Show")).accessibilityIdentifier("readingFilter")

@@ -7,6 +7,8 @@ struct MorningBriefMenu: View {
     let state: AppState
     @AppStorage("interfaceLanguage") private var interfaceLanguage = "en"
     @AppStorage("autoTranslateDescriptions") private var autoTranslateDescriptions = true
+    @AppStorage("interestLanguages") private var interestLanguages = ""
+    @AppStorage("interestKeywords") private var interestKeywords = ""
     @Environment(\.openWindow) private var openWindow
     @Environment(\.appTypography) private var typography
     private static let translations = DescriptionTranslationStorage(directory: FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -29,7 +31,8 @@ struct MorningBriefMenu: View {
             footer.padding(.horizontal, 10).padding(.vertical, 8)
         }
         .frame(width: 360)
-        .task { if model.brief == nil { await model.generate() } }
+        .task { if model.brief == nil { await model.generate() } else { model.applyInterests() } }
+        .onChange(of: interestLanguages + "|" + interestKeywords) { _, _ in model.applyInterests() }
     }
 
     private var header: some View {
@@ -80,7 +83,10 @@ struct MorningBriefMenu: View {
                 let text = description(item)
                 if !text.isEmpty { Text(text).font(typography.listBody).foregroundStyle(.secondary).lineLimit(2).lineSpacing(typography.listLeading) }
                 HStack(spacing: 10) {
-                    if let language = item.language { Text(language) }
+                    if let interest = item.interest {
+                        Label(interest, systemImage: "star.fill").foregroundStyle(.orange).help(ui("Matches your interests"))
+                    }
+                    if let language = item.language, language != item.interest { Text(language) }
                     if let gain = item.periodStars { Text("+\(gain.formatted())").monospacedDigit() }
                 }.font(typography.metadata).foregroundStyle(.secondary)
             }

@@ -16,6 +16,8 @@ public struct MorningBrief: Codable, Equatable {
         public let language: String?
         public let stars: Int?
         public let periodStars: Int?
+        /// The language or keyword from the user's interests that this project matched.
+        public var interest: String? = nil
     }
 
     public static let itemLimit = 10
@@ -29,16 +31,33 @@ public struct MorningBrief: Codable, Equatable {
     public let previous: VisitSnapshot?
     /// The list this brief was built from; tomorrow's brief compares against it.
     public let current: VisitSnapshot
-    public let items: [Item]
+    public internal(set) var items: [Item]
     public let newCount: Int
     public let risingCount: Int
+    /// `Interests.signature` this brief was ordered with; nil before interests existed.
+    public var interestSignature: String? = nil
 
     public var isFirst: Bool { previous == nil }
     public var hasNews: Bool { newCount + risingCount > 0 }
 
-    public static func build(from snapshot: TrendSnapshot, day: String, now: Date, earlier: MorningBrief?, hidden: Set<String> = []) -> MorningBrief {
+    /// The same brief with items re-marked and re-ordered for changed interests (no new list is fetched).
+    public func reordered(by interests: Interests) -> MorningBrief {
+        var copy = self
+        let marked = items.map { item -> Item in
+            var next = item
+            next.interest = interests.match(language: item.language, texts: [item.id, item.description])
+            return next
+        }
+        copy.items = marked.filter { $0.interest != nil } + marked.filter { $0.interest == nil }
+        copy.interestSignature = interests.signature
+        return copy
+    }
+
+    /// Projects matching `interests` come first (each group in Trending order); the brief keeps `itemLimit` items.
+    public static func build(from snapshot: TrendSnapshot, day: String, now: Date, earlier: MorningBrief?, hidden: Set<String> = [],
+                             interests: Interests = Interests()) -> MorningBrief {
         let previous = earlier.flatMap { $0.day == day ? $0.previous : $0.current }
-        var items: [Item] = [], newCount = 0, risingCount = 0
+        var candidates: [Item] = [], newCount = 0, risingCount = 0
         for repo in snapshot.repositories where !hidden.contains(repo.id) {
             let change: Change
             switch previous?.change(for: repo.id, currentRank: repo.rank) {
@@ -47,14 +66,16 @@ public struct MorningBrief: Codable, Equatable {
             default: change = .unchanged
             }
             // The first brief has nothing to compare with, so it lists the top projects.
-            guard previous == nil || change != .unchanged, items.count < itemLimit else { continue }
+            guard previous == nil || change != .unchanged else { continue }
             let description = repo.description.isEmpty ? (Repository.excerpt(repo.readmeExcerpt) ?? "") : repo.description
-            items.append(Item(id: repo.id, rank: repo.rank, change: change, description: description,
-                              language: repo.language, stars: repo.stars, periodStars: repo.periodStars))
+            let interest = interests.match(language: repo.language, texts: [repo.id, repo.description, repo.readmeExcerpt ?? ""])
+            candidates.append(Item(id: repo.id, rank: repo.rank, change: change, description: description,
+                                   language: repo.language, stars: repo.stars, periodStars: repo.periodStars, interest: interest))
         }
+        let items = Array((candidates.filter { $0.interest != nil } + candidates.filter { $0.interest == nil }).prefix(itemLimit))
         return MorningBrief(day: day, generatedAt: now, collectedAt: snapshot.collectedAt, previous: previous,
                             current: VisitSnapshot(collectedAt: snapshot.collectedAt, ids: snapshot.repositories.map(\.id)),
-                            items: items, newCount: newCount, risingCount: risingCount)
+                            items: items, newCount: newCount, risingCount: risingCount, interestSignature: interests.signature)
     }
 }
 
