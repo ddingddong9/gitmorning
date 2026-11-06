@@ -101,7 +101,7 @@ Homebrew Cask·서명된 appcast·설치 파일 준비는 [배포 가이드](REL
 - 실제 언어별 수집본 운영 검증.
 - 공개 배포용 서명·공증·업데이트.
 
-개발 규칙: [CONTRIBUTING.md](../CONTRIBUTING.md). 배포 설계: [DEPLOYMENT.md](../DEPLOYMENT.md). 수집기: [pipeline/README.md](../pipeline/README.md). 작업 목록: [ROADMAP.md](../ROADMAP.md).
+개발 규칙: [CONTRIBUTING.md](../.github/CONTRIBUTING.md). 배포 설계: [DEPLOYMENT.md](DEPLOYMENT.md). 수집기: [pipeline/README.md](../pipeline/README.md). 작업 목록: [ROADMAP.md](ROADMAP.md).
 
 ## Claude Code 스킬
 
