@@ -19,6 +19,8 @@ python3 -m pipeline.collect --html pipeline/tests/fixtures/trending.html
 
 항목: `id`(owner/name), `owner`, `name`, `url`, `rank`, `description`, `language`, `stars`, `periodStars`, `summaryStatus`. 미확인 지표와 언어는 null입니다. 영문 설명을 한국어 요약이라고 표시하지 않습니다.
 
+공유 피드는 일간 목록마다 `history-daily-<language>.json`도 발행합니다(`pipeline/history.py`). 최근 14일(UTC 날짜) 동안 저장소별 순위를 담고, 같은 날 여러 번 수집하면 그날의 마지막 목록으로 바꿉니다. 형식이 맞지 않는 이전 파일은 무시하고 새로 시작합니다. 앱은 이것으로 연속 트렌딩 일수와 순위 흐름을 보여 줍니다.
+
 공유 피드(`feed/build_site.py`)는 항목마다 선택 필드 `readmeExcerpt`를 추가합니다. `readme_excerpt()`가 README에서 배지·로고·제목·목록·표·코드·인용·링크 모음과 설명 반복을 건너뛰고 처음 나오는 설명 문단 1~2개를 최대 320자로 뽑은 원문 발췌이며, AI 요약이 아닙니다. 피드 작업의 `GITHUB_TOKEN`으로 읽고 `v1/readmes.json`에 ETag로 캐시하므로 바뀌지 않은 README는 요청 한도를 쓰지 않습니다. 읽기 실패는 이전 발췌를 유지하고 발행을 막지 않습니다. 앱은 설명이 없으면 발췌를 설명 대신, 있으면 "README에서" 섹션으로 보여 주며 같은 기기 내 번역을 씁니다. 이 필드가 없는 이전 피드와 GitHub 직접 읽기는 그대로 동작합니다.
 
 일간·주간과 언어별 목록은 각각 다른 페이지를 수집해야 합니다. 전체 목록에서 Python만 골라낸 결과를 Python Trending이라고 부르지 않습니다. HTTP 성공·HTML 파싱 성공이 원본 전체의 완전성을 완전히 보장하지는 않으므로 항목 수 급변 감시는 후속 작업입니다.
