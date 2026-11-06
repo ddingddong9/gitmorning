@@ -84,7 +84,7 @@ python3 scripts/prepare-release.py \
 1. 이 저장소에 GitHub Release `v0.4.0` 초안을 만듭니다. `distribution/release-notes.md`·`distribution/appcast.xml`은 같은 PR에서 갱신합니다.
 2. 검증된 ZIP, `appcast.xml`, `SHA256SUMS`를 첨부합니다. 개인키·소스 작업 폴더는 첨부하지 않습니다.
 3. 앱을 설치한 별도 테스트 환경에서 공개 피드 조회·Ed25519 검증을 확인합니다.
-4. Release를 발행한 뒤 생성된 Cask를 루트 `Casks/gitmorning.rb`에 반영합니다(Homebrew tap이 이 경로를 읽습니다). 기존 사용자에게는 Release의 최신 appcast가 갱신되어 전달됩니다.
+4. Release를 발행한 뒤 생성된 Cask를 루트 `Casks/gitmorning.rb`에 반영합니다(Homebrew tap이 이 경로를 읽습니다). `main`은 보호돼 있어 직접 푸시할 수 없으니, Cask 변경도 PR로 올리고 CI 통과 후 머지합니다. 기존 사용자에게는 Release의 최신 appcast가 갱신되어 전달됩니다.
 5. 익명 HTTPS 다운로드와 아래 명령을 검증한 후 README의 배포 준비 중 표시를 제거합니다.
 
 ```sh

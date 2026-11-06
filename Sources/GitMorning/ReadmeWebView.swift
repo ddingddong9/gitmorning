@@ -35,6 +35,7 @@ struct ReadmeWebView: NSViewRepresentable {
         guard context.coordinator.loaded != page + directory else { return }
         context.coordinator.loaded = page + directory
         context.coordinator.repository = repository
+        context.coordinator.expectingLoad = true
         view.loadHTMLString(page, baseURL: baseURL)
     }
 
@@ -79,12 +80,17 @@ struct ReadmeWebView: NSViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate {
         var repository: Repository
         var loaded: String?
+        /// True only between `loadHTMLString` and its navigation, so nothing in the page can navigate it afterwards.
+        var expectingLoad = false
         init(repository: Repository) { self.repository = repository }
 
         func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             guard action.navigationType == .linkActivated, let url = action.request.url else {
-                // The initial page load; anything else (forms, redirects, frames) is refused.
-                decisionHandler(action.navigationType == .other && action.targetFrame?.isMainFrame == true ? .allow : .cancel); return
+                // Only the page this view loaded; later loads (meta refresh, forms, redirects, frames) are refused.
+                if expectingLoad, action.navigationType == .other, action.targetFrame?.isMainFrame == true {
+                    expectingLoad = false; decisionHandler(.allow)
+                } else { decisionHandler(.cancel) }
+                return
             }
             // In-page anchors (table of contents) scroll inside the preview.
             if url.fragment != nil, let current = webView.url,

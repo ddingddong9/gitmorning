@@ -21,9 +21,12 @@ jobs:
         with:
           fetch-depth: 0
       - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; exit 0; fi
-          files="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          if [ "$EVENT" != "pull_request" ]; then echo "app=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          files="$(git diff --name-only "origin/$BASE_REF...HEAD")"
           printf '%s\n' "$files"
           if printf '%s\n' "$files" | grep -qE '^(Sources/|Tests/|Resources/|scripts/|pipeline/|Package\.(swift|resolved)$|\.github/workflows/ci\.yml$)'; then
             echo "app=true" >> "$GITHUB_OUTPUT"

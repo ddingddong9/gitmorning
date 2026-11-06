@@ -6,10 +6,9 @@ on:
     # Minute 41, away from the busy start of the hour when GitHub delays or drops scheduled runs.
     - cron: '41 * * * *'
   workflow_dispatch:
+# The collector only reads; Pages deploy permissions are granted to the deploy job alone.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -26,16 +25,19 @@ jobs:
         env:
           # Read-only README requests; cached by ETag so unchanged READMEs are free.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
           path: site
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/configure-pages@v6
       - id: deployment
         uses: actions/deploy-pages@v5
