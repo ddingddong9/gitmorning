@@ -137,7 +137,7 @@ struct ContentView: View {
             } else {
                 List(selection: $state.selectedID) {
                     ForEach(state.visible) { repo in
-                        RepositoryRow(repository: repo, rank: state.feed == .saved ? nil : state.repositories.firstIndex(of: repo).map { $0 + 1 }, feed: state.feed, saved: state.isSaved(repo), reading: state.reading(repo.id), change: state.rankChange(repo.id), translatedDescription: autoTranslateDescriptions ? translations.translation(repo, target: interfaceLanguage) : nil)
+                        RepositoryRow(repository: repo, rank: state.feed == .saved ? nil : state.repositories.firstIndex(of: repo).map { $0 + 1 }, feed: state.feed, saved: state.isSaved(repo), reading: state.reading(repo.id), change: state.rankChange(repo.id), streak: state.feed == .daily ? state.streak(repo.id) : nil, translatedDescription: autoTranslateDescriptions ? translations.translation(repo, target: interfaceLanguage) : nil)
                             .tag(repo.id)
                             .contextMenu {
                                 Button(ui(state.isSaved(repo) ? "Unsave" : "Save")) { state.toggleBookmark(repo) }
@@ -169,7 +169,8 @@ struct ContentView: View {
     }
     @ViewBuilder private var detailColumn: some View {
         if let selected = state.selected {
-            RepositoryDetail(repository: selected,
+            RepositoryDetail(history: state.feed == .daily ? state.history : nil,
+                             repository: selected,
                              translatedDescription: autoTranslateDescriptions ? translations.translation(selected, target: interfaceLanguage) : nil,
                              translationMessage: autoTranslateDescriptions ? translations.message(selected, target: interfaceLanguage) : nil,
                              translatedExcerpt: autoTranslateDescriptions ? selected.readmeExcerptItem.flatMap { translations.translation($0, target: interfaceLanguage) } : nil,
@@ -228,6 +229,8 @@ private struct RepositoryRow: View {
     let saved: Bool
     let reading: ProjectReading
     let change: RankChange?
+    /// Days in a row on today's list; shown from the second day.
+    let streak: Int?
     let translatedDescription: String?
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -249,6 +252,10 @@ private struct RepositoryRow: View {
                         else if delta < 0 { Text("↓ \(-delta)") }
                     }
                 }
+                if let streak, streak >= 2 {
+                    Label(String(format: ui("%d days"), streak), systemImage: "flame").labelStyle(.titleAndIcon).foregroundStyle(.orange)
+                        .help(String(format: ui("On today’s list %d days in a row"), streak))
+                }
                 if saved { Image(systemName: "bookmark.fill").accessibilityLabel(ui("Saved")) }
                 Spacer()
                 Text(ui(repository.gain(for: feed).map { "+" + $0.formatted() } ?? "Growth unavailable"))
@@ -260,6 +267,7 @@ private struct RepositoryRow: View {
 }
 
 private struct RepositoryDetail: View {
+    let history: TrendHistory?
     @AppStorage("interfaceLanguage") private var interfaceLanguage = "en"
     private func ui(_ source: String) -> String { (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).text(source) }
     private var locale: Locale { (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).locale }
@@ -294,6 +302,29 @@ private struct RepositoryDetail: View {
             if let translationMessage { Text(ui(translationMessage)).font(typography.metadata).foregroundStyle(.secondary) }
         }
     }
+    /// How long the project has been on this daily list and its rank on each of the last seven days.
+    @ViewBuilder private var trendHistorySection: some View {
+        if let history, history.days.count >= 2, history.streak(repository.id) > 0 {
+            let streak = history.streak(repository.id)
+            section("Trending history") {
+                Text(streak == 1 ? ui("New on today’s list") : String(format: ui("On today’s list %d days in a row"), streak))
+                HStack(alignment: .bottom, spacing: 6) {
+                    ForEach(history.recent(repository.id), id: \.date) { day in
+                        VStack(spacing: 4) {
+                            Text(day.rank.map { "#\($0)" } ?? "–").font(typography.listTitle).monospacedDigit()
+                                .foregroundStyle(day.rank == nil ? .tertiary : .primary)
+                            Text(TrendHistory.label(day.date, locale: locale)).font(typography.metadata).foregroundStyle(.secondary)
+                        }.frame(maxWidth: .infinity)
+                    }
+                }
+                .padding(.vertical, 10).background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+                .accessibilityElement(children: .combine)
+                Text(ui("Rank on GitHub Trending each day (UTC). – means not on the list."))
+                    .font(typography.metadata).foregroundStyle(.secondary)
+            }
+        }
+    }
+
     /// The README excerpt from the shared feed, when GitHub's description is not the whole story.
     @ViewBuilder private var readmeExcerptSection: some View {
         if let excerpt = repository.readmeExcerpt {
@@ -341,6 +372,7 @@ private struct RepositoryDetail: View {
                 Divider()
                 descriptionSection
                 readmeExcerptSection
+                trendHistorySection
                 if !repository.features.isEmpty { section("Features") {
                     ForEach(repository.features, id: \.self) { feature in
                         HStack(alignment: .top, spacing: 8) { Text(ui("•")); Text(feature) }

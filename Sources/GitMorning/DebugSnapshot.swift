@@ -20,6 +20,11 @@ import GitMorningCore
                 try? await Task.sleep(for: .seconds(2)); state.query = query
             }
             try? await Task.sleep(for: .seconds(6)) // Let lists, translations, and layout settle.
+            // Optional: GITMORNING_SNAPSHOT_HISTORY=/path/history.json shows a rank history (not cached).
+            if let path = ProcessInfo.processInfo.environment["GITMORNING_SNAPSHOT_HISTORY"],
+               let data = FileManager.default.contents(atPath: path) {
+                state.debugUseHistory(data); try? await Task.sleep(for: .seconds(1))
+            }
             if let main = NSApp.windows.first(where: { $0.identifier?.rawValue.hasPrefix("main") == true }) { save(main, to: directory.appendingPathComponent("main.png")) }
             let panel = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 340, height: 560), styleMask: [.titled], backing: .buffered, defer: false)
             let size = ReadingSize.fromStored(UserDefaults.standard.string(forKey: "readingSize") ?? "")
