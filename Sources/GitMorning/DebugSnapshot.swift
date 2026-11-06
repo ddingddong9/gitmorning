@@ -19,6 +19,13 @@ import GitMorningCore
             if let query = ProcessInfo.processInfo.environment["GITMORNING_SNAPSHOT_QUERY"] {
                 try? await Task.sleep(for: .seconds(2)); state.query = query
             }
+            // Optional: GITMORNING_SNAPSHOT_SAVED=1 shows the Saved list and writes its Markdown export.
+            if ProcessInfo.processInfo.environment["GITMORNING_SNAPSHOT_SAVED"] == "1" {
+                state.feed = .saved; state.changeFeed()
+                let language = InterfaceLanguage(rawValue: UserDefaults.standard.string(forKey: "interfaceLanguage") ?? "") ?? .english
+                try? SavedExport.markdown(state.exportEntries, exportedAt: Date(), locale: language.locale, text: language.text)
+                    .write(to: directory.appendingPathComponent("saved.md"), atomically: true, encoding: .utf8)
+            }
             try? await Task.sleep(for: .seconds(6)) // Let lists, translations, and layout settle.
             // Optional: GITMORNING_SNAPSHOT_HISTORY=/path/history.json shows a rank history (not cached).
             if let path = ProcessInfo.processInfo.environment["GITMORNING_SNAPSHOT_HISTORY"],

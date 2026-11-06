@@ -110,6 +110,8 @@ jobs:
           .build/check-readme-variants
           swiftc Sources/GitMorningCore/*.swift scripts/check-history.swift -o .build/check-history
           .build/check-history
+          swiftc Sources/GitMorningCore/*.swift scripts/check-export.swift -o .build/check-export
+          .build/check-export
       - run: swift test --disable-sandbox
       - name: Include a current real snapshot in the app build
         run: |

@@ -90,6 +90,12 @@ final class AppState {
         return Calendar.current.isDateInToday(date) ? date.formatted(.dateTime.hour().minute().locale(locale))
             : date.formatted(.dateTime.month().day().hour().minute().locale(locale))
     }
+    /// Saved projects with their notes and status, for the Markdown export.
+    var exportEntries: [SavedExport.Entry] {
+        bookmarks.compactMap { mark in
+            savedRepositories[mark.repositoryID].map { SavedExport.Entry(repository: $0, savedAt: mark.savedAt, reading: reading($0.id)) }
+        }
+    }
     func isSaved(_ repository: Repository) -> Bool { bookmarks.contains { $0.repositoryID == repository.id } }
     func selectVisible() { if !visible.contains(where: { $0.id == selectedID }) { selectedID = visible.first?.id } }
     func changeFeed() { generation += 1; query = ""; language = "All languages"; readingFilter = "All projects"; loadLocal() }

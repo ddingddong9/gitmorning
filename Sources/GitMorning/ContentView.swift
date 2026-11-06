@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 import GitMorningCore
 
 struct ContentView: View {
@@ -81,6 +83,7 @@ struct ContentView: View {
                 Text(ui(state.feed.title)).font(typography.heading)
                 Spacer()
                 if state.isLoading { ProgressView().controlSize(.small).accessibilityLabel(ui("Refreshing")) }
+                if state.feed == .saved && state.savedCount > 0 { exportMenu }
             }
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -108,6 +111,30 @@ struct ContentView: View {
                     .font(typography.metadata).foregroundStyle(.secondary)
             }
         }.padding(.horizontal, AppSpacing.column).padding(.top, 12).padding(.bottom, 10)
+    }
+    private var exportMenu: some View {
+        Menu {
+            Button(ui("Copy as Markdown")) {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(exportMarkdown, forType: .string)
+            }
+            Button(ui("Save as Markdown…")) { saveExport() }
+        } label: { Label(ui("Export"), systemImage: "square.and.arrow.up") }
+        .labelStyle(.iconOnly).menuIndicator(.hidden).fixedSize().help(ui("Export saved projects"))
+        .accessibilityIdentifier("exportSaved")
+    }
+    private var exportMarkdown: String {
+        SavedExport.markdown(state.exportEntries, exportedAt: Date(),
+                             locale: (InterfaceLanguage(rawValue: interfaceLanguage) ?? .english).locale, text: ui)
+    }
+    private func saveExport() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = ui("GitMorning saved projects") + ".md"
+        panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
+        panel.canCreateDirectories = true
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do { try exportMarkdown.write(to: url, atomically: true, encoding: .utf8) }
+        catch { state.message = "Could not save the file. Check the folder and try again." }
     }
     private var listColumn: some View {
         VStack(spacing: 0) {
