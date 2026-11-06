@@ -112,6 +112,8 @@ jobs:
           .build/check-history
           swiftc Sources/GitMorningCore/*.swift scripts/check-export.swift -o .build/check-export
           .build/check-export
+          swiftc Sources/GitMorningCore/*.swift scripts/check-interests.swift -o .build/check-interests
+          .build/check-interests
       - run: swift test --disable-sandbox
       - name: Include a current real snapshot in the app build
         run: |

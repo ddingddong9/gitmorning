@@ -28,6 +28,16 @@ final class MorningBriefModel {
     private var defaults: UserDefaults { .standard }
     var minuteOfDay: Int { defaults.object(forKey: "briefMinute") as? Int ?? MorningSchedule.defaultMinute }
     private var notifies: Bool { defaults.bool(forKey: "briefNotification") }
+    var interests: Interests {
+        Interests(storedLanguages: defaults.string(forKey: "interestLanguages") ?? "", storedKeywords: defaults.string(forKey: "interestKeywords") ?? "")
+    }
+    /// Re-marks today's brief after the interests change in Settings, without fetching a new list.
+    func applyInterests() {
+        guard let current = brief, current.interestSignature != interests.signature else { return }
+        let next = current.reordered(by: interests)
+        brief = next
+        try? storage.save(next)
+    }
     private var language: InterfaceLanguage { InterfaceLanguage(rawValue: defaults.string(forKey: "interfaceLanguage") ?? "") ?? .matching() }
 
     func start() {
@@ -54,7 +64,7 @@ final class MorningBriefModel {
             let snapshot = try key.decode(data)
             try? cache.save(data, for: key) // The main list can reuse this validated download.
             let now = Date()
-            let next = MorningBrief.build(from: snapshot, day: MorningSchedule.day(now), now: now, earlier: brief, hidden: hiddenIDs())
+            let next = MorningBrief.build(from: snapshot, day: MorningSchedule.day(now), now: now, earlier: brief, hidden: hiddenIDs(), interests: interests)
             brief = next
             do { try storage.save(next); problem = nil }
             catch { problem = "The brief was updated but could not be saved on this Mac." }

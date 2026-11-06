@@ -60,6 +60,10 @@ final class AppState {
         loadLocal()
     }
 
+    var interests: Interests {
+        Interests(storedLanguages: UserDefaults.standard.string(forKey: "interestLanguages") ?? "",
+                  storedKeywords: UserDefaults.standard.string(forKey: "interestKeywords") ?? "")
+    }
     var key: SnapshotKey? { try? SnapshotKey(period: feed == .weekly ? "weekly" : "daily", language: language == "All languages" ? "all" : language) }
     var requestID: String { feed.rawValue + "|" + language }
     var savedCount: Int { bookmarks.filter { savedRepositories[$0.repositoryID] != nil }.count }
@@ -68,12 +72,14 @@ final class AppState {
         return snapshot.map(Repository.from) ?? []
     }
     var visible: [Repository] {
-        Catalog.filter(repositories, feed: feed, language: feed == .saved && language != "All languages" ? language : nil, query: "", bookmarks: bookmarks).filter { repository in
+        let interests = readingFilter == "My interests" ? self.interests : Interests()
+        return Catalog.filter(repositories, feed: feed, language: feed == .saved && language != "All languages" ? language : nil, query: "", bookmarks: bookmarks).filter { repository in
             let needle = query.trimmingCharacters(in: .whitespacesAndNewlines)
             let reading = reading(repository.id)
             if readingFilter == "Hidden" { if !reading.hidden { return false } }
             else if reading.hidden { return false }
             if readingFilter == "Unread" && reading.read { return false }
+            if readingFilter == "My interests" && interests.match(language: repository.language, texts: [repository.id, repository.summary, repository.readmeExcerpt ?? ""]) == nil { return false }
             if readingFilter == "Since last visit" {
                 guard let change = rankChange(repository.id) else { return false }
                 switch change { case .new: break; case .moved(let delta): if delta <= 0 { return false } }
