@@ -67,11 +67,29 @@ final class ReleaseWatcher {
         var request = URLRequest(url: url, timeoutInterval: 20)
         request.setValue("application/atom+xml", forHTTPHeaderField: "Accept")
         request.setValue("GitMorning", forHTTPHeaderField: "User-Agent")
-        guard let (data, response) = try? await URLSession.shared.data(for: request), let http = response as? HTTPURLResponse else { return nil }
+        guard let (bytes, response) = try? await session.bytes(for: request), let http = response as? HTTPURLResponse else { return nil }
         if http.statusCode == 404 { return Result(release: nil) }
-        guard http.statusCode == 200, data.count <= 2_000_000 else { return nil }
+        guard http.statusCode == 200, response.expectedContentLength <= limit else { return nil }
+        var data = Data()
+        do {
+            for try await byte in bytes {
+                guard data.count < limit else { return nil }
+                data.append(byte)
+            }
+        } catch { return nil }
         return Result(release: ReleaseFeed.latest(atom: data, repository: id))
     }
+
+    private static let limit = 2_000_000
+    /// Isolated from the app's cookies and cache; follows redirects only to github.com over HTTPS (renamed repositories).
+    private static let session: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.timeoutIntervalForRequest = 20
+        configuration.timeoutIntervalForResource = 30
+        configuration.httpCookieStorage = nil
+        configuration.urlCache = nil
+        return URLSession(configuration: configuration, delegate: GitHubOnlyRedirects(), delegateQueue: nil)
+    }()
 
     private func notify(_ found: [(String, ReleaseInfo)]) async {
         guard Bundle.main.bundleIdentifier != nil else { return }
@@ -82,5 +100,13 @@ final class ReleaseWatcher {
         content.title = language.text(found.count == 1 ? "New release of a saved project" : "New releases of saved projects")
         content.body = found.prefix(4).map { "\($0.0) \($0.1.tag)" }.joined(separator: ", ")
         try? await center.add(UNNotificationRequest(identifier: "releases-" + UUID().uuidString, content: content, trigger: nil))
+    }
+}
+
+private final class GitHubOnlyRedirects: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
+                    newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        let ok = request.url?.scheme == "https" && request.url?.host?.lowercased() == "github.com"
+        completionHandler(ok ? request : nil)
     }
 }

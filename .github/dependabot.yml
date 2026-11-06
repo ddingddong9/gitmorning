@@ -1,0 +1,11 @@
+# Security and version updates for the GitHub Actions used by workflows and the Swift package (Sparkle).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: swift
+    directory: /
+    schedule:
+      interval: monthly

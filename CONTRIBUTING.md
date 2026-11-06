@@ -33,6 +33,8 @@ swiftc Sources/GitMorningCore/*.swift scripts/check-core.swift -o .build/check-c
 - When you change the Trending parser, update both `pipeline/collect.py` and `Sources/GitMorningCore/TrendingReader.swift`, and the shared fixtures in `pipeline/tests/fixtures/parity/`.
 - Never commit app binaries, caches, API keys, or release signing keys (`.release-secrets/` is ignored).
 
+Found a security problem? Please report it privately as described in [SECURITY.md](SECURITY.md).
+
 By contributing, you agree that your contribution is licensed under the [MIT License](LICENSE).
 
 ---
