@@ -1,0 +1,38 @@
+name: Collect Trending (manual validation)
+on:
+  workflow_dispatch:
+    inputs:
+      period:
+        description: Trending period
+        type: choice
+        options: [daily, weekly]
+        default: daily
+      language:
+        description: Language snapshot
+        type: choice
+        options: [all, Python, TypeScript, JavaScript, Swift, Go, Rust]
+        default: all
+permissions:
+  contents: read
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate collector
+        run: python -m unittest discover -s pipeline/tests -v
+      - name: Collect one canonical snapshot
+        env:
+          PERIOD: ${{ inputs.period }}
+          LANGUAGE: ${{ inputs.language }}
+        run: python -m pipeline.collect --period "$PERIOD" --language "$LANGUAGE"
+      - uses: actions/upload-artifact@v6
+        with:
+          name: trending-${{ inputs.period }}-${{ inputs.language }}
+          path: pipeline/output/*.json
+          if-no-files-found: error
+          retention-days: 7

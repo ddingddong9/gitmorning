@@ -1,5 +1,3 @@
-# Copied from the GitMorning app repository (pipeline/collect.py). Edit it there, then copy here;
-# the app repository CI checks that both copies match.
 """Read the canonical Trending page and publish a validated, atomic JSON snapshot.
 
 No credentials are needed for Trending. GITHUB_TOKEN is used only with the

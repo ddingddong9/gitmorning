@@ -12,6 +12,7 @@
 [![macOS 14+](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](#설치)
 [![Apple Silicon](https://img.shields.io/badge/Apple%20Silicon-arm64-555)](#설치)
 [![Downloads](https://img.shields.io/github/downloads/ddingddong9/gitmorning/total?label=downloads)](https://github.com/ddingddong9/gitmorning/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [English](README.md) · **한국어**
 
@@ -79,6 +80,28 @@ GitMorning을 열고 **오늘의 트렌드**에서 프로젝트를 누르세요.
 
 보관함, 메모, 번역, 설명은 맥에만 저장됩니다. 계정, 광고, 사용 기록 수집이 없습니다. 목록은 이 저장소의 공개 데이터(`feed/`, GitHub Trending에서 1시간마다 갱신)에서 가져오고, 받을 수 없으면 GitHub에서 직접 읽습니다.
 
+## 소스에서 빌드
+
+GitMorning은 Xcode 프로젝트 없는 SwiftPM 앱입니다. macOS 14 이상에서 Xcode나 Command Line Tools로 빌드할 수 있습니다.
+
+```sh
+git clone https://github.com/ddingddong9/gitmorning && cd gitmorning
+GITMORNING_CORE_ONLY=1 swift build        # 업데이트 기능 없이 빌드
+zsh scripts/build-app.sh                   # dist/에 GitMorning.app 생성
+python3 -m unittest discover -s pipeline/tests
+```
+
+| 경로 | 내용 |
+| --- | --- |
+| `Sources/GitMorningCore` | 파싱, 피드·README 읽기, 아침 브리핑, 캐시 (UI 없음) |
+| `Sources/GitMorning` | SwiftUI 앱, 메뉴 막대 브리핑, 설정 |
+| `pipeline/` | Python 트렌딩 수집기, README 발췌, 상태 점검 |
+| `feed/` | GitHub Pages에 올리는 공유 피드 생성 |
+| `scripts/` | 앱 번들·릴리스, `check-*.swift` 검사 |
+| `Casks/` | Homebrew Cask |
+
+자세한 내용은 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/discovery.md](docs/discovery.md), [CONTRIBUTING.md](CONTRIBUTING.md)를 참고하세요.
+
 ## 피드백
 
-버그나 아이디어가 있으면 [이슈를 남겨 주세요](https://github.com/ddingddong9/gitmorning/issues). 도움이 됐다면 ⭐를 눌러 다른 사람도 찾을 수 있게 해 주세요.
+버그나 아이디어가 있으면 [이슈를 남기거나](https://github.com/ddingddong9/gitmorning/issues) PR을 보내 주세요. GitMorning은 [MIT 라이선스](LICENSE)입니다. 도움이 됐다면 ⭐를 눌러 다른 사람도 찾을 수 있게 해 주세요.
