@@ -6,6 +6,9 @@ previously published file (its collectedAt stays old, so apps can see its age),
 so one bad response never blanks a list. The app falls back to reading GitHub
 Trending directly when this feed is missing or stale.
 
+Daily lists also get history-daily-<language>.json: each repository's rank for
+the last 14 days, so the app can show how long a project has been trending.
+
 Each repository also gets a short readmeExcerpt: the first descriptive paragraph
 of its README, so projects with a missing or one-line description still say
 what they do. READMEs are read with the workflow's GITHUB_TOKEN and cached by
@@ -25,6 +28,7 @@ import urllib.request
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from pipeline.collect import LANGUAGES, PERIODS, CollectionError, publish, readme_excerpt, readme_markdown, request, snapshot, trending_url  # noqa: E402
 import hashlib  # noqa: E402
+from pipeline.history import history_name, merge as merge_history  # noqa: E402
 
 PUBLISHED = "https://ddingddong9.github.io/gitmorning/v1/"
 README_CACHE = "readmes.json"
@@ -41,6 +45,15 @@ def previous(name):
     except (OSError, ValueError):
         pass
     return None
+
+
+def previous_json(name):
+    """Any currently published JSON file, or None."""
+    try:
+        with urllib.request.urlopen(PUBLISHED + name, timeout=20) as response:
+            return json.loads(response.read(5_000_000))
+    except (OSError, ValueError):
+        return None
 
 
 def previous_readmes():
@@ -116,7 +129,22 @@ def main():
         files[name] = {"collectedAt": payload["collectedAt"], "count": len(payload["repositories"])}
     if not files:
         sys.exit("No snapshot could be collected or kept; not publishing an empty feed.")
-    manifest = {"schemaVersion": 1, "generatedAt": datetime.now(timezone.utc).isoformat(), "files": files}
+    # Daily rank history: one file per daily list, the last 14 days. A failure keeps the published file.
+    histories = {}
+    for name, payload in collected:
+        if payload["period"] != "daily":
+            continue
+        history_file = history_name(payload["languageFilter"])
+        previous_history = previous_json(history_file)
+        try:
+            history = merge_history(previous_history, payload)
+        except (KeyError, TypeError, ValueError) as exc:
+            print(f"{history_file}: not updated ({exc})", file=sys.stderr)
+            history = previous_history
+        if history:
+            (directory / history_file).write_text(json.dumps(history, ensure_ascii=False) + "\n", encoding="utf-8")
+            histories[history_file] = {"updatedAt": history["updatedAt"], "days": len(history["days"])}
+    manifest = {"schemaVersion": 1, "generatedAt": datetime.now(timezone.utc).isoformat(), "files": files, "history": histories}
     (directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     (directory / README_CACHE).write_text(json.dumps({"schemaVersion": 1, "readmes": readmes}, ensure_ascii=False) + "\n", encoding="utf-8")
     (Path(args.output) / "index.html").write_text(
