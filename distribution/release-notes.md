@@ -1,12 +1,11 @@
-GitMorning 0.5.6 — Your interests, trending streaks, and release alerts
+GitMorning 0.5.7 — Cleaner settings and one-line install
 
-- Interests: pick languages and keywords in Settings → Morning brief. Matching projects come first in the morning brief with a ★, and Today's Trending can show only them.
-- Trending streaks: projects on Today's Trending for two or more days in a row show 🔥 "N days", and project details show their rank for the last 7 days.
-- Release alerts: GitMorning checks your saved projects for new stable releases twice a day (nightly and beta builds skipped) and marks them in Saved. Notifications are optional.
-- Export Saved as Markdown: copy or save your saved projects, grouped by status with notes.
-- Security: tighter README preview and release checks.
+- Simpler screens: Settings, project details, the README preview, and the morning brief drop explanations the controls already show.
+- Settings now has four tabs. The Data tab is gone; a custom feed can still be set with `defaults write dev.gitmorning.prototype feedBaseURL https://…`.
+- Aligned text: settings notes and the README preview now line up on the left.
+- One-line install: `brew install --cask ddingddong9/apps/gitmorning`. Homebrew installs open without the first-launch block.
 - Bundled Trending lists refreshed.
 
-관심사 맞춤 아침 브리핑(★) · 연속 트렌딩 "N일째"와 최근 7일 순위 · 보관한 프로젝트 새 릴리스 알림 · 보관함 마크다운 내보내기 · 보안 보완
+설정·상세 화면의 부가 설명 정리 · 설정 탭 4개로 간소화(데이터 탭 제거) · 텍스트 정렬 수정 · Homebrew 한 줄 설치, 첫 실행 경고 없음
 
-Apple Silicon · macOS 14+. This preview is not Apple-notarized yet; macOS may ask you to approve the first launch.
+Apple Silicon · macOS 14+. Not Apple-notarized: Homebrew installs open normally; if you download the ZIP, approve the first launch in System Settings → Privacy & Security → Open Anyway.
