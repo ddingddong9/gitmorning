@@ -1,11 +1,9 @@
-GitMorning 0.5.7 — Cleaner settings and one-line install
+GitMorning 0.5.8 — Ready for the new website
 
-- Simpler screens: Settings, project details, the README preview, and the morning brief drop explanations the controls already show.
-- Settings now has four tabs. The Data tab is gone; a custom feed can still be set with `defaults write dev.gitmorning.prototype feedBaseURL https://…`.
-- Aligned text: settings notes and the README preview now line up on the left.
-- One-line install: `brew install --cask ddingddong9/apps/gitmorning`. Homebrew installs open without the first-launch block.
+- GitMorning now has a website: https://ddingddong9.github.io/gitmorning/ shows what it does, today's top projects live from the shared feed, and a one-line install.
+- The shared Trending feed can move to the website's own domain later without interrupting your lists, streaks, or README excerpts. GitMorning follows the move only for the same feed file over HTTPS.
 - Bundled Trending lists refreshed.
 
-설정·상세 화면의 부가 설명 정리 · 설정 탭 4개로 간소화(데이터 탭 제거) · 텍스트 정렬 수정 · Homebrew 한 줄 설치, 첫 실행 경고 없음
+웹사이트 공개 · 공유 피드가 나중에 새 도메인으로 옮겨도 목록·연속 트렌딩·README 요약이 끊기지 않도록 준비
 
 Apple Silicon · macOS 14+. Not Apple-notarized: Homebrew installs open normally; if you download the ZIP, approve the first launch in System Settings → Privacy & Security → Open Anyway.
