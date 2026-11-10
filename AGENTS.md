@@ -23,6 +23,7 @@ Data flow to read before reviewing:
 - **Morning brief:** `MorningBriefModel` → `GitMorningCore/MorningBrief.swift` → `MorningBriefMenu`.
 - **Saved projects:** `Discovery.swift` / saved catalog → `ReleaseWatcher` (releases.atom) → `SavedExport`.
 - **Text:** `DescriptionTranslations` (Apple Translation) and `OnDeviceSummary` (Foundation Models), both cached on disk.
+- **Website:** `web/` → `feed/landing.py` (adds screenshots and the released version) → the Pages root, deployed with the feed by `publish-trending.yml`. It must stay static: no cookies, analytics, or third-party requests.
 
 What to check:
 

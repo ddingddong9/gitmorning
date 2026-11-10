@@ -6,6 +6,10 @@ on:
     # Minute 41, away from the busy start of the hour when GitHub delays or drops scheduled runs.
     - cron: '41 * * * *'
   workflow_dispatch:
+  # The website lives at the Pages root (web/, built by feed/landing.py), so publish when it changes.
+  push:
+    branches: [main]
+    paths: ['web/**', 'feed/**', 'docs/*.png', 'docs/assets/icon.png', 'distribution/appcast.xml']
 # The collector only reads; Pages deploy permissions are granted to the deploy job alone.
 permissions:
   contents: read

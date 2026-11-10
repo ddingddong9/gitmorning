@@ -14,7 +14,7 @@
 [![Downloads](https://img.shields.io/github/downloads/ddingddong9/gitmorning/total?label=downloads)](https://github.com/ddingddong9/gitmorning/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[English](README.md) · **한국어**
+[English](README.md) · **한국어** · [웹사이트](https://ddingddong9.github.io/gitmorning/)
 
 <img src="docs/demo.gif" alt="13초로 보는 GitMorning: 메뉴 막대 아침 브리핑과 메인 창" width="820" />
 
