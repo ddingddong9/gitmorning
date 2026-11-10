@@ -13,6 +13,21 @@
   --radius: 14px;
   --font: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Segoe UI", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  /* Scrolling the page plays a sunrise: dawn at the top, sunrise in the middle, morning at the end. */
+  --sky-dawn:
+    radial-gradient(80% 55% at 80% 100%, #ffc39a 0%, #f4cfe2 42%, transparent 76%),
+    linear-gradient(#e7e2f4, #f1e4ef 55%, #fbe2d4);
+  --sky-sunrise:
+    radial-gradient(95% 70% at 76% 92%, #ffae66 0%, #ffd3ad 38%, transparent 76%),
+    linear-gradient(#f5e8f0, #fff0e2 55%, #ffe0c0);
+  --sky-day:
+    radial-gradient(70% 45% at 72% 0%, rgb(255 214 140 / 40%), transparent 70%),
+    linear-gradient(#edf4fa, #fbf7f1 42%);
+  --sun-core: #fff4c8;
+  --sun-edge: #ffb347;
+  --sun-low: 0.7;
+  --sun-high: 0.95;
+  --glass: color-mix(in srgb, var(--surface) 86%, transparent);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -27,13 +42,44 @@
     --accent-text: #ffa766;
     --rise: #69db7c;
     --shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 16px 48px rgb(0 0 0 / 40%);
+    --sky-dawn:
+      radial-gradient(80% 55% at 80% 100%, #8f2d3c 0%, #3a1f3d 38%, transparent 72%),
+      linear-gradient(#0e0c18, #1a1327 60%, #2a1a37);
+    --sky-sunrise:
+      radial-gradient(95% 70% at 76% 92%, #d9530f 0%, #8f2d3c 34%, transparent 72%),
+      linear-gradient(#1a1327, #2a1a2b 52%, #4a2421);
+    --sky-day:
+      radial-gradient(80% 55% at 78% 8%, rgb(255 160 70 / 22%), transparent 70%),
+      linear-gradient(#251b14, #17130f 55%);
+    --sun-core: #ffcf8a;
+    --sun-edge: #ff7a2e;
+    --sun-low: 0.75;
+    --sun-high: 0.35;
+    --glass: color-mix(in srgb, var(--surface) 80%, transparent);
   }
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+
+/* --p is the scroll progress from 0 (top) to 1 (bottom), set by site.js; 0 without JavaScript. */
+.sky { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; --p: 0; }
+.sky-layer { position: absolute; inset: 0; }
+.dawn { background: var(--sky-dawn); }
+.sunrise { background: var(--sky-sunrise); opacity: clamp(0, calc(var(--p) * 2.6 - 0.15), 1); }
+.day { background: var(--sky-day); opacity: clamp(0, calc((var(--p) - 0.5) * 2.4), 1); }
+.sun {
+  position: absolute; right: 4vw; top: 0; width: min(46vmin, 420px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--sun-core) 0%, var(--sun-edge) 38%, transparent 70%);
+  filter: blur(14px);
+  /* Strong and warm on the horizon; in dark mode it fades into a glow as it climbs. */
+  opacity: calc(var(--sun-low) + (var(--sun-high) - var(--sun-low)) * var(--p));
+  /* Low on the horizon at the top of the page, high in the sky at the bottom. */
+  translate: 0 calc(100vh - min(46vmin, 420px) * 0.45 - var(--p) * 70vh);
+  will-change: translate, opacity;
+}
+html { scroll-behavior: smooth; scroll-padding-top: 76px; background: var(--bg); }
 body {
-  margin: 0; background: var(--bg); color: var(--text);
+  margin: 0; background: transparent; color: var(--text);
   font: 17px/1.6 var(--font); -webkit-font-smoothing: antialiased;
 }
 :lang(ko) body, body:lang(ko) { word-break: keep-all; }
@@ -48,7 +94,7 @@ h1, h2, h3 { line-height: 1.2; margin: 0; letter-spacing: -0.02em; }
   position: sticky; top: 0; z-index: 10;
   display: flex; align-items: center; gap: 24px;
   padding: 14px max(20px, calc((100vw - 1120px) / 2));
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
   backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
   border-bottom: 1px solid var(--line);
 }
@@ -78,9 +124,6 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
   position: relative; isolation: isolate; overflow: hidden;
   display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center;
   padding-top: 72px !important;
-  background:
-    radial-gradient(60% 70% at 85% 10%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 70%),
-    radial-gradient(50% 60% at 100% 60%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%);
 }
 .badge {
   display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
@@ -124,11 +167,11 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 .prompt { color: var(--muted); user-select: none; }
 
 /* Today */
-.today { background: var(--surface-2); }
+.today, .install { background: transparent; }
 .trending { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .trending li {
   display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline;
-  padding: 18px 20px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line);
+  padding: 18px 20px; border-radius: var(--radius); background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--line);
 }
 .trending li.placeholder { display: block; color: var(--muted); }
 .rank { font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
@@ -146,7 +189,7 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 /* Features */
 .feature-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .feature {
-  padding: 28px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line);
+  padding: 28px; border-radius: var(--radius); background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--line);
 }
 .feature h3 { font-size: 20px; margin-bottom: 10px; }
 .feature p { margin: 0; color: var(--muted); }
@@ -162,15 +205,14 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 .pills { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-wrap: wrap; gap: 10px; }
 .pills li {
   padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 15px;
-  background: var(--surface); border: 1px solid var(--line);
+  background: var(--glass); border: 1px solid var(--line);
 }
 .pills li::before { content: "✓ "; color: var(--rise); }
 .privacy-body { color: var(--muted); max-width: 46em; margin: 0; }
 
 /* Install */
-.install { background: var(--surface-2); }
 .install-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.install-card { padding: 28px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); min-width: 0; }
+.install-card { padding: 28px; border-radius: var(--radius); background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--line); min-width: 0; }
 .install-card h3 { font-size: 20px; margin-bottom: 16px; }
 .install-card .copy { width: 100%; justify-content: space-between; }
 .install-card .copy code { white-space: normal; overflow-wrap: anywhere; }
@@ -201,16 +243,9 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 .footer a:hover { color: var(--text); }
 
 /* Motion: only with JavaScript and when the visitor has not asked for less motion (see site.js). */
-.hero::before {
-  content: ""; position: absolute; inset: -20% -10% auto auto; width: 70%; aspect-ratio: 1; z-index: -1;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent);
-  filter: blur(20px); opacity: 0.8;
-}
-.motion .hero::before { animation: sunrise 14s ease-in-out infinite alternate; }
-@keyframes sunrise {
-  from { translate: 4% 6%; scale: 0.92; }
-  to { translate: -6% -2%; scale: 1.08; }
-}
+.motion .sun { animation: glow 7s ease-in-out infinite alternate; }
+@keyframes glow { to { scale: 1.06; } }
+.calm .sun { translate: 0 30vh; }
 .motion .intro > * { animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .motion .intro > :nth-child(2) { animation-delay: 0.08s; }
 .motion .intro > :nth-child(3) { animation-delay: 0.16s; }

@@ -79,6 +79,23 @@
   // Content starts hidden only when it can be revealed again.
   const canReveal = "IntersectionObserver" in window;
   if (!calm.matches && canReveal) document.documentElement.classList.add("motion");
+  if (calm.matches) document.documentElement.classList.add("calm");
+
+  // The sky follows the scroll: 0 at the top of the page (dawn), 1 at the bottom (morning).
+  const sky = document.querySelector(".sky");
+  let skyFrame = 0;
+  function updateSky() {
+    skyFrame = 0;
+    const range = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = range > 0 ? Math.min(1, Math.max(0, window.scrollY / range)) : 0;
+    sky.style.setProperty("--p", progress.toFixed(4));
+  }
+  const requestSky = () => { if (!skyFrame) skyFrame = requestAnimationFrame(updateSky); };
+  if (sky) {
+    window.addEventListener("scroll", requestSky, { passive: true });
+    window.addEventListener("resize", requestSky);
+    updateSky();
+  }
   let language = "en";
   let feed = null;
 
@@ -162,6 +179,7 @@
     list.replaceChildren(...items);
     items.forEach((item) => item.classList.add("reveal"));
     observe(items);
+    if (sky) requestSky();  // the page got taller
     const collected = new Date(data.collectedAt);
     document.getElementById("updated").textContent = isNaN(collected) ? "" : text("today.updated").replace("{time}", ago(collected));
   }
