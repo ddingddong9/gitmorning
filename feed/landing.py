@@ -1,6 +1,7 @@
 """Build the GitMorning website at the root of the Pages site (the feed lives under v1/).
 
-Copies web/ and the screenshots from docs/, and fills in the latest released version from
+Copies web/ (including the hero videos in web/media/, rendered from media/readme-demo) and the
+screenshots from docs/, and fills in the latest released version from
 distribution/appcast.xml (updated by release-cask.yml after each release). Standalone for a
 local preview, without collecting anything:
 
@@ -16,8 +17,6 @@ SPARKLE = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
 # Published path under assets/ → source in the repository.
 ASSETS = {
     "icon.png": "docs/assets/icon.png",
-    "screenshot.png": "docs/screenshot.png",
-    "screenshot-ko.png": "docs/screenshot-ko.png",
     "morning-brief.png": "docs/morning-brief.png",
     "morning-brief-ko.png": "docs/morning-brief-ko.png",
     "social-preview.png": "docs/social-preview.png",
@@ -42,7 +41,9 @@ def build(output, root=ROOT):
         target = output / source.name
         if source.name == "index.html":
             target.write_text(source.read_text(encoding="utf-8").replace("{{VERSION}}", version), encoding="utf-8")
-        elif source.is_file():
+        elif source.is_dir():
+            shutil.copytree(source, target, dirs_exist_ok=True)  # media/: hero videos and posters
+        else:
             shutil.copyfile(source, target)
     (output / "assets").mkdir(exist_ok=True)
     for name, source in ASSETS.items():

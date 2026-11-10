@@ -28,7 +28,7 @@ class LandingTests(unittest.TestCase):
             for name in ["style.css", "site.js"] + ["assets/" + n for n in ASSETS]:
                 self.assertTrue((Path(tmp) / name).is_file(), name)
             # Every local file the page references exists in the built site (v1/ comes from the feed build).
-            for ref in re.findall(r'(?:src|href|data-ko-src)="([^"#:]+)"', html):
+            for ref in re.findall(r'(?:src|href|poster|data-ko-src|data-ko-poster)="([^"#:]+)"', html):
                 if not ref.startswith("v1/"):
                     self.assertTrue((Path(tmp) / ref).is_file(), ref)
 

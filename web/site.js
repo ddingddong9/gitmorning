@@ -73,6 +73,12 @@
   const english = new Map(nodes.map((node) => [node, node.innerHTML]));
   const images = [...document.querySelectorAll("img[data-ko-src]")];
   const englishSrc = new Map(images.map((img) => [img, img.getAttribute("src")]));
+  const video = document.getElementById("hero-video");
+  const englishVideo = video && { src: video.getAttribute("src"), poster: video.getAttribute("poster") };
+  const calm = window.matchMedia("(prefers-reduced-motion: reduce)");
+  // Content starts hidden only when it can be revealed again.
+  const canReveal = "IntersectionObserver" in window;
+  if (!calm.matches && canReveal) document.documentElement.classList.add("motion");
   let language = "en";
   let feed = null;
 
@@ -93,6 +99,14 @@
       node.innerHTML = next === "ko" && ko[key] ? ko[key] : english.get(node);
     }
     for (const img of images) img.src = next === "ko" ? img.dataset.koSrc : englishSrc.get(img);
+    if (video) {
+      const src = next === "ko" ? video.dataset.koSrc : englishVideo.src;
+      if (video.getAttribute("src") !== src) {
+        video.poster = next === "ko" ? video.dataset.koPoster : englishVideo.poster;
+        video.src = src;
+        if (heroVisible && !calm.matches) video.play().catch(() => {});
+      }
+    }
     document.getElementById("lang").textContent = next === "ko" ? "English" : "한국어";
     document.querySelectorAll(".copy:not(.done) .copy-label").forEach((label) => { label.textContent = text("copy"); });
     if (feed) render(feed);
@@ -146,6 +160,8 @@
       return item;
     });
     list.replaceChildren(...items);
+    items.forEach((item) => item.classList.add("reveal"));
+    observe(items);
     const collected = new Date(data.collectedAt);
     document.getElementById("updated").textContent = isNaN(collected) ? "" : text("today.updated").replace("{time}", ago(collected));
   }
@@ -168,6 +184,37 @@
     item.innerHTML = text("today.failed");
     list.replaceChildren(item);
   }
+
+  // Hero video: plays only while on screen, never for visitors who asked for less motion.
+  let heroVisible = false;
+  if (video && canReveal) {
+    if (calm.matches) video.controls = true;
+    new IntersectionObserver(([entry]) => {
+      heroVisible = entry.isIntersecting;
+      if (calm.matches) return;
+      if (heroVisible) video.play().catch(() => {}); else video.pause();
+    }, { threshold: 0.25 }).observe(video);
+  }
+
+  // Sections fade up as they scroll into view; cards in one row follow each other.
+  const reveal = canReveal ? new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("is-visible");
+      reveal.unobserve(entry.target);
+    }
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 }) : null;
+  function observe(nodes) {
+    if (!reveal) return;
+    let previous = null, order = 0;
+    for (const node of nodes) {
+      order = node.parentElement === previous ? order + 1 : 0;
+      previous = node.parentElement;
+      node.style.setProperty("--delay", Math.min(order, 5) * 0.08 + "s");
+      reveal.observe(node);
+    }
+  }
+  observe(document.querySelectorAll(".reveal"));
 
   const preferred = stored() ?? ((navigator.language || "").toLowerCase().startsWith("ko") ? "ko" : "en");
   apply(preferred);

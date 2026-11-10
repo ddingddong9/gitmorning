@@ -31,7 +31,7 @@
 
 <main id="top">
   <section class="hero">
-    <div class="hero-text">
+    <div class="hero-text intro">
       <a class="badge" href="https://github.com/ddingddong9/gitmorning/releases/latest"><span>v{{VERSION}}</span><span data-i18n="hero.badge">What's new</span></a>
       <h1 data-i18n="hero.title">GitHub Trending,<br>every morning on your Mac.</h1>
       <p class="lead" data-i18n="hero.lead">GitMorning lists what is new or rising since yesterday, reads each project in your language, and keeps the ones you want to try. From the menu bar, with no account.</p>
@@ -44,12 +44,15 @@
       <p class="fine" data-i18n="hero.fine">Free · MIT · Apple Silicon · macOS 14+</p>
     </div>
     <figure class="hero-shot">
-      <img src="assets/screenshot.png" data-ko-src="assets/screenshot-ko.png" alt="GitMorning showing today's trending projects" width="1600" height="1129">
+      <video id="hero-video" muted loop playsinline preload="metadata" width="1440" height="900"
+        poster="media/hero-en.jpg" data-ko-poster="media/hero-ko.jpg"
+        src="media/hero-en.mp4" data-ko-src="media/hero-ko.mp4"
+        aria-label="GitMorning: the morning brief opens from the menu bar, then the main window and a README preview"></video>
     </figure>
   </section>
 
   <section class="today" id="today" aria-labelledby="today-title">
-    <div class="section-head">
+    <div class="section-head reveal">
       <p class="eyebrow" data-i18n="today.eyebrow">Live from the feed</p>
       <h2 id="today-title" data-i18n="today.title">Today on GitHub Trending</h2>
       <p data-i18n="today.lead">The same public list the app reads, refreshed from GitHub several times a day.</p>
@@ -61,31 +64,31 @@
   </section>
 
   <section class="features" id="features" aria-labelledby="features-title">
-    <div class="section-head">
+    <div class="section-head reveal">
       <p class="eyebrow" data-i18n="features.eyebrow">What it does</p>
       <h2 id="features-title" data-i18n="features.title">Five minutes with your coffee, not an hour of scrolling.</h2>
     </div>
     <div class="feature-grid">
-      <article class="feature wide">
+      <article class="feature wide reveal">
         <div>
           <h3 data-i18n="f1.title">A morning brief in the menu bar</h3>
           <p data-i18n="f1.body">Once a day at the time you choose, GitMorning compares today's Trending with yesterday's and shows only what is new or climbing. Projects that match your languages and keywords come first.</p>
         </div>
         <img src="assets/morning-brief.png" data-ko-src="assets/morning-brief-ko.png" alt="The morning brief panel" width="720" height="1048" loading="lazy">
       </article>
-      <article class="feature">
+      <article class="feature reveal">
         <h3 data-i18n="f2.title">Read it in your language</h3>
         <p data-i18n="f2.body">Descriptions and README excerpts are translated on your Mac. Open the full README right in the app, or a translation the project wrote itself.</p>
       </article>
-      <article class="feature">
+      <article class="feature reveal">
         <h3 data-i18n="f3.title">Keep what caught your eye</h3>
         <p data-i18n="f3.body">Save projects with a note and a status. GitMorning tells you when one of them ships a new release, and exports the list as Markdown.</p>
       </article>
-      <article class="feature">
+      <article class="feature reveal">
         <h3 data-i18n="f4.title">See what lasts</h3>
         <p data-i18n="f4.body">Streaks show how many days a project has stayed on the list, with its rank for the last week.</p>
       </article>
-      <article class="feature">
+      <article class="feature reveal">
         <h3 data-i18n="f5.title">Explain it, only if you ask</h3>
         <p data-i18n="f5.body">On Macs with Apple Intelligence, GitMorning can summarize a README in Korean on device. Everything else works without AI.</p>
       </article>
@@ -93,33 +96,33 @@
   </section>
 
   <section class="privacy" aria-labelledby="privacy-title">
-    <div class="section-head">
+    <div class="section-head reveal">
       <p class="eyebrow" data-i18n="privacy.eyebrow">Privacy</p>
       <h2 id="privacy-title" data-i18n="privacy.title">Your list stays on your Mac.</h2>
     </div>
-    <ul class="pills">
+    <ul class="pills reveal">
       <li data-i18n="privacy.p1">No account</li>
       <li data-i18n="privacy.p2">No analytics</li>
       <li data-i18n="privacy.p3">No server of its own</li>
       <li data-i18n="privacy.p4">On-device AI only</li>
     </ul>
-    <p class="privacy-body" data-i18n="privacy.body">Saved projects, notes, translations, and explanations are files in your Library folder. The app reads public pages only: this site's Trending feed, GitHub Trending as a fallback, and the README and release pages of projects you open or save. This site has no cookies or tracking either.</p>
+    <p class="privacy-body reveal" data-i18n="privacy.body">Saved projects, notes, translations, and explanations are files in your Library folder. The app reads public pages only: this site's Trending feed, GitHub Trending as a fallback, and the README and release pages of projects you open or save. This site has no cookies or tracking either.</p>
   </section>
 
   <section class="install" id="install" aria-labelledby="install-title">
-    <div class="section-head">
+    <div class="section-head reveal">
       <p class="eyebrow" data-i18n="install.eyebrow">Install</p>
       <h2 id="install-title" data-i18n="install.title">One command.</h2>
     </div>
     <div class="install-grid">
-      <div class="install-card">
+      <div class="install-card reveal">
         <h3>Homebrew</h3>
         <button class="copy" type="button" data-copy="brew install --cask ddingddong9/apps/gitmorning">
           <code><span class="prompt">$</span> brew install --cask ddingddong9/apps/gitmorning</code><span class="copy-label" data-i18n="copy">Copy</span>
         </button>
         <p data-i18n="install.brew">Opens right away. Updates arrive inside the app, or with <code>brew upgrade</code>.</p>
       </div>
-      <div class="install-card">
+      <div class="install-card reveal">
         <h3 data-i18n="install.zip.title">Or the ZIP</h3>
         <ol>
           <li data-i18n="install.zip.1">Download it from the <a href="https://github.com/ddingddong9/gitmorning/releases/latest">latest release</a> and move GitMorning to Applications.</li>
@@ -131,30 +134,30 @@
   </section>
 
   <section class="faq" id="faq" aria-labelledby="faq-title">
-    <div class="section-head">
+    <div class="section-head reveal">
       <h2 id="faq-title" data-i18n="faq.title">Questions</h2>
     </div>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q1">Is it free?</summary>
       <p data-i18n="a1">Yes. GitMorning is open source under the MIT license, with no paid plan, ads, or API keys.</p>
     </details>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q2">Why is it not notarized by Apple?</summary>
       <p data-i18n="a2">Notarization needs a paid Apple Developer ID. Updates are still signed with an Ed25519 key and checked before they install, so a tampered update is refused. The source is public.</p>
     </details>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q3">Which Macs does it run on?</summary>
       <p data-i18n="a3">Apple Silicon Macs with macOS 14 or later. Translation needs macOS 15, and Korean explanations need macOS 26 with Apple Intelligence turned on.</p>
     </details>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q4">Does it need to stay open?</summary>
       <p data-i18n="a4">The morning brief and release alerts run while GitMorning is open. Keep it in the menu bar and turn on Open at login, and it is ready every morning.</p>
     </details>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q5">Where does the list come from?</summary>
       <p data-i18n="a5">From github.com/trending. A workflow in the repository collects it several times a day and publishes it on this site; if that copy is older than eight hours, the app reads GitHub directly.</p>
     </details>
-    <details>
+    <details class="reveal">
       <summary data-i18n="q6">How do I report a bug or help out?</summary>
       <p data-i18n="a6">Open an issue or a pull request on GitHub. Korean and English are both welcome.</p>
     </details>

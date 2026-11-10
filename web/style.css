@@ -75,6 +75,7 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 
 /* Hero */
 .hero {
+  position: relative; isolation: isolate; overflow: hidden;
   display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 56px; align-items: center;
   padding-top: 72px !important;
   background:
@@ -99,10 +100,11 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 }
 .secondary:hover { border-color: var(--muted); }
 .fine { color: var(--muted); font-size: 14px; margin: 18px 0 0; }
-.hero-shot img {
-  border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--line);
-}
 .hero-shot { margin: 0; }
+.hero-shot video {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 10;
+  border-radius: 14px; box-shadow: var(--shadow); background: #120f1f;
+}
 
 /* Copy buttons */
 .copy {
@@ -197,6 +199,31 @@ main > section { padding: 96px max(20px, calc((100vw - 1120px) / 2)); }
 .footer nav { display: flex; gap: 20px; }
 .footer a { text-decoration: none; }
 .footer a:hover { color: var(--text); }
+
+/* Motion: only with JavaScript and when the visitor has not asked for less motion (see site.js). */
+.hero::before {
+  content: ""; position: absolute; inset: -20% -10% auto auto; width: 70%; aspect-ratio: 1; z-index: -1;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent-2) 30%, transparent), transparent);
+  filter: blur(20px); opacity: 0.8;
+}
+.motion .hero::before { animation: sunrise 14s ease-in-out infinite alternate; }
+@keyframes sunrise {
+  from { translate: 4% 6%; scale: 0.92; }
+  to { translate: -6% -2%; scale: 1.08; }
+}
+.motion .intro > * { animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.motion .intro > :nth-child(2) { animation-delay: 0.08s; }
+.motion .intro > :nth-child(3) { animation-delay: 0.16s; }
+.motion .intro > :nth-child(4) { animation-delay: 0.24s; }
+.motion .intro > :nth-child(5) { animation-delay: 0.32s; }
+.motion .hero-shot { animation: rise 1.1s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes rise { from { opacity: 0; translate: 0 28px; } }
+.motion .reveal {
+  opacity: 0; translate: 0 32px;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), translate 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--delay, 0s);
+}
+.motion .reveal.is-visible { opacity: 1; translate: 0 0; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 40px; padding-top: 48px !important; }
