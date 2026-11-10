@@ -48,6 +48,19 @@ import GitMorningCore
             if let settings = NSApp.windows.first(where: { $0.isVisible && $0 !== main && $0.canBecomeKey && $0.frame.width > 400 }) {
                 save(settings, to: directory.appendingPathComponent("settings.png"))
             }
+            // Every Settings tab drawn on its own as settings-1.png … settings-5.png.
+            let updater = AppUpdater()
+            let language = InterfaceLanguage(rawValue: UserDefaults.standard.string(forKey: "interfaceLanguage") ?? "") ?? .english
+            for (index, tab) in SettingsView.SettingsTab.allCases.enumerated() {
+                let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 640, height: 560), styleMask: [.titled], backing: .buffered, defer: false)
+                window.isReleasedWhenClosed = false  // ARC owns it; closing must not release it again.
+                window.contentView = NSHostingView(rootView: SettingsView(tab: tab).environmentObject(updater)
+                    .environment(\.appTypography, AppTypography(size: size)).environment(\.locale, language.locale))
+                window.orderFront(nil)
+                try? await Task.sleep(for: .seconds(1))
+                save(window, to: directory.appendingPathComponent("settings-\(index + 1).png"))
+                window.close()
+            }
             // Optional: GITMORNING_SNAPSHOT_README=owner/name opens the README preview and saves the window
             // (readme-window.png) and its web content (readme.png).
             if let id = ProcessInfo.processInfo.environment["GITMORNING_SNAPSHOT_README"] {

@@ -114,10 +114,6 @@ struct ContentView: View {
                     }
                 }.labelsHidden().help(ui("Show")).accessibilityIdentifier("readingFilter")
             }.pickerStyle(.menu).font(typography.action)
-            if state.readingFilter == "Since last visit" && !state.hasBaseline {
-                Text(ui("First visit. Changes appear after your next visit to this list."))
-                    .font(typography.metadata).foregroundStyle(.secondary)
-            }
         }.padding(.horizontal, AppSpacing.column).padding(.top, 12).padding(.bottom, 10)
     }
     private var exportMenu: some View {
@@ -198,8 +194,6 @@ struct ContentView: View {
         } else if autoTranslateDescriptions, #available(macOS 15.0, *), translations.hasFailures {
             Button(ui("Retry")) { translationAttempt += 1 }.buttonStyle(.link)
                 .help(ui("Some descriptions remain in the original language."))
-        } else {
-            Text(ui(state.feed == .saved ? "Recently saved" : "Trending order"))
         }
     }
     @ViewBuilder private var detailColumn: some View {
@@ -221,7 +215,7 @@ struct ContentView: View {
                              preview: { previewRepository = selected },
                              save: { state.toggleBookmark(selected) }, openSource: { state.showSource(selected) })
         } else {
-            ContentUnavailableView(ui("Select a project"), systemImage: "book", description: Text(ui("Choose a project to read its original description. No AI required.")))
+            ContentUnavailableView(ui("Select a project"), systemImage: "book")
         }
     }
     private var layout: some View {
@@ -381,8 +375,6 @@ private struct RepositoryDetail: View {
                 }
                 .padding(.vertical, 10).background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
                 .accessibilityElement(children: .combine)
-                Text(ui("Rank on GitHub Trending each day (UTC). – means not on the list."))
-                    .font(typography.metadata).foregroundStyle(.secondary)
             }
         }
     }
@@ -461,8 +453,6 @@ private struct RepositoryDetail: View {
                         Link(ui("Read the source README"), destination: summary.sourceURL).font(typography.action)
                         Text(ui("AI-generated from a README excerpt. Check the original for errors or missing details."))
                             .font(typography.metadata).foregroundStyle(.secondary)
-                    } else {
-                        Text(ui("Optional: generate a Korean explanation of the README on this Mac. Browsing original descriptions never needs AI."))
                     }
                     if let message = summaryMessage { Text(ui(message)).foregroundStyle(.secondary) }
                     if isSummarizing {
@@ -479,7 +469,6 @@ private struct RepositoryDetail: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label(ui("Source: GitHub Trending"), systemImage: "info.circle")
                     Text(ui("Collected: ") + (repository.capturedAt.flatMap { SnapshotDate.display($0, locale: locale) } ?? ui("Unknown")))
-                    Text(ui("Saved metrics reflect the snapshot at the time of saving."))
                 }.font(typography.metadata).foregroundStyle(.secondary)
             }
             .padding(.horizontal, 28).padding(.vertical, 24).frame(maxWidth: 680, alignment: .leading).frame(maxWidth: .infinity, alignment: .leading)
@@ -525,7 +514,6 @@ private struct SavedProjectEditor: View {
                 .accessibilityLabel(ui("Personal note")).accessibilityIdentifier("projectNote")
             Button(ui("Save note")) { var item = reading; item.note = note; update(item) }
                 .disabled(note == reading.note).accessibilityIdentifier("saveProjectNote")
-            Text(ui("Stored only on this Mac.")).font(typography.metadata).foregroundStyle(.secondary)
         }
         .onAppear { note = reading.note }
         .onChange(of: repositoryID) { _, _ in note = reading.note }
@@ -561,8 +549,10 @@ private struct ReadmePreview: View {
                 if !variants.isEmpty { languageMenu }
                 Button(ui("Done")) { dismiss() }.keyboardShortcut(.cancelAction)
             }
-            Text(ui(selection.isEmpty ? "Original README · rendered by GitHub · no AI" : "Translation by the project · may be older than the original"))
-                .font(typography.metadata).foregroundStyle(.secondary)
+            if !selection.isEmpty {
+                Text(ui("Translation by the project · may be older than the original"))
+                    .font(typography.metadata).foregroundStyle(.secondary)
+            }
             Divider()
             content
         }.padding(24).frame(width: 780, height: 660)
@@ -588,8 +578,7 @@ private struct ReadmePreview: View {
         } else {
             ReadmeWebView(html: text, repository: repository, fontSize: 15 * typography.size.scale, directory: selectedVariant?.directory ?? "")
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-            Text(ui(note ?? "Links open in your browser. Images load from GitHub."))
-                .font(typography.metadata).foregroundStyle(.secondary)
+            if let note { Text(ui(note)).font(typography.metadata).foregroundStyle(.secondary) }
         }
     }
 

@@ -63,7 +63,7 @@ struct MorningBriefMenu: View {
                 }.padding(6)
             }
         } else {
-            Text(ui(model.brief == nil ? (model.isLoading ? "Getting today’s brief…" : "No brief yet") : "Nothing new or rising today. Open GitMorning to browse the full list."))
+            Text(ui(model.brief == nil ? (model.isLoading ? "Getting today’s brief…" : "No brief yet") : "Nothing new or rising today."))
                 .font(typography.listBody).foregroundStyle(.secondary).padding(14).frame(maxWidth: .infinity, alignment: .leading)
         }
     }

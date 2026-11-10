@@ -53,7 +53,7 @@ struct ReadmeWebView: NSViewRepresentable {
         :root { --fg:#1f2328; --muted:#59636e; --border:#d1d9e0; --code:#f6f8fa; --link:#0969da; }
         @media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --border:#3d444d; --code:#262c36; --link:#4493f8; } }
         html { background: transparent; }
-        body { margin: 0; padding: 4px 20px 24px 4px; color: var(--fg); background: transparent;
+        body { margin: 0; padding: 4px 20px 24px 0; color: var(--fg); background: transparent;
                font: \(Int(size))px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; word-wrap: break-word; }
         a { color: var(--link); text-decoration: none; } a:hover { text-decoration: underline; }
         h1, h2, h3, h4, h5, h6 { margin: 1.4em 0 0.6em; line-height: 1.25; font-weight: 600; }
