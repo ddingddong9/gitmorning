@@ -78,7 +78,8 @@ jobs:
           GITMORNING_RELEASE: '1'
           GITMORNING_UPDATE_FEED: https://github.com/${{ github.repository }}/releases/latest/download/appcast.xml
         run: |
-          export GITMORNING_UPDATE_PUBLIC_KEY="$(tr -d '\n' < distribution/sparkle-public-key.txt)"
+          GITMORNING_UPDATE_PUBLIC_KEY="$(tr -d '\n' < distribution/sparkle-public-key.txt)"
+          export GITMORNING_UPDATE_PUBLIC_KEY
           zsh scripts/build-app.sh
           if strings dist/GitMorning.app/Contents/MacOS/GitMorning | grep -q GITMORNING_SNAPSHOT; then
             echo "::error::release binary contains the DEBUG snapshot hook"; exit 1

@@ -31,6 +31,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          # shellcheck disable=SC2016  # the backticks are a Markdown code fence, not a command
           body="$(printf 'The daily Trending canary failed.\n\n```\n%s\n```\n\nRun: %s\n\nCheck pipeline/collect.py and Sources/GitMorningCore/TrendingReader.swift together, then update pipeline/tests/fixtures/parity.' "$(cat canary-error.txt)" "$RUN_URL")"
           gh label create trending-canary --color D93F0B --description "Live Trending parse check failed" 2>/dev/null || true
           existing="$(gh issue list --label trending-canary --state open --json number --jq '.[0].number')"
