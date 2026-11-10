@@ -1,0 +1,35 @@
+name: Feature idea
+description: Suggest something that would make GitMorning more useful. (기능 제안)
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](https://github.com/ddingddong9/gitmorning/issues) and the [roadmap](https://github.com/ddingddong9/gitmorning/blob/main/docs/ROADMAP.md) first. Korean or English is fine.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: What you are trying to do and what is hard today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should GitMorning do?
+      description: Sketches or examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or workarounds
+      description: Optional.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Would you like to help?
+      options:
+        - label: I can test a build
+        - label: I can send a pull request
