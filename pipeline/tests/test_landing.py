@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from feed.landing import ASSETS, ROOT, build, released_version
+from feed.landing import ASSETS, DEFAULT_SITE, ROOT, build, released_version, site_url
 
 APPCAST = """<?xml version="1.0"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"><channel>
@@ -23,7 +23,9 @@ class LandingTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             version = build(tmp)
             html = (Path(tmp) / "index.html").read_text(encoding="utf-8")
-            self.assertNotIn("{{VERSION}}", html)
+            self.assertNotIn("{{", html)
+            self.assertIn(f'<link rel="canonical" href="{site_url()}">', html)
+            self.assertFalse((Path(tmp) / "CNAME").exists())
             self.assertIn("v" + version, html)
             for name in ["style.css", "site.js"] + ["assets/" + n for n in ASSETS]:
                 self.assertTrue((Path(tmp) / name).is_file(), name)
@@ -31,6 +33,20 @@ class LandingTests(unittest.TestCase):
             for ref in re.findall(r'(?:src|href|poster|data-ko-src|data-ko-poster)="([^"#:]+)"', html):
                 if not ref.startswith("v1/"):
                     self.assertTrue((Path(tmp) / ref).is_file(), ref)
+
+    def test_site_url_follows_the_cname_setting(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            (Path(tmp) / "web").mkdir()
+            self.assertEqual(site_url(Path(tmp)), DEFAULT_SITE)
+            cname = Path(tmp) / "web/CNAME"
+            cname.write_text("\n")
+            self.assertEqual(site_url(Path(tmp)), DEFAULT_SITE)
+            cname.write_text(" GitMorning.app \n")
+            self.assertEqual(site_url(Path(tmp)), "https://gitmorning.app/")
+            for bad in ["https://gitmorning.app", "gitmorning.app/path", "localhost"]:
+                cname.write_text(bad)
+                with self.assertRaises(ValueError):
+                    site_url(Path(tmp))
 
     def test_every_korean_key_matches_an_element_or_script_string(self):
         html = (ROOT / "web/index.html").read_text(encoding="utf-8")

@@ -28,7 +28,7 @@ Data flow to read before reviewing:
 What to check:
 
 - **Parser parity and feed compatibility.** One parser changed without the other, a fixture changed to fit new output, a required field added to `v1/`, or a shared list older than the app's cache replacing it.
-- **Network and privacy.** New hosts, requests without timeouts or size limits, redirects off github.com, cookies or caches shared with the app session, personal data (notes, saved lists) sent anywhere, or polling more often than now (release checks: at most twice a day per project).
+- **Network and privacy.** New hosts, requests without timeouts or size limits, redirects off github.com (the feed reader follows only `FeedRedirect`: the same feed file over HTTPS), cookies or caches shared with the app session, personal data (notes, saved lists) sent anywhere, or polling more often than now (release checks: at most twice a day per project).
 - **README preview.** It must keep JavaScript off, a non-persistent data store, the Content Security Policy, and links opening in the browser; only the initial load may navigate.
 - **Stored data.** Older files still decode; failed reads do not overwrite; caches can be deleted without losing saved projects or notes.
 - **Concurrency.** Late results (translation, summary, refresh, release checks) must not overwrite a newer selection, list, or language; cancelled work must not save.

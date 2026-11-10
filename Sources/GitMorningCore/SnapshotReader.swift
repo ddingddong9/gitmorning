@@ -51,8 +51,28 @@ public struct SnapshotCache {
 
 public enum SnapshotReadError: Error { case invalidHTTPResponse, oversizedResponse, olderSnapshot }
 
-private final class RejectRedirects: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
-    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) { completionHandler(nil) }
+/// Which redirects the feed reader follows. Only a move of the same file to another HTTPS host, such as
+/// GitHub Pages sending `ddingddong9.github.io/gitmorning/v1/…` to a custom domain once one is connected.
+/// Everything the reader gets is still decoded and checked; any other redirect fails the request.
+public enum FeedRedirect {
+    public static func allows(from old: URL?, to new: URL?) -> Bool {
+        guard let old, let new,
+              let before = URLComponents(url: old, resolvingAgainstBaseURL: false),
+              let after = URLComponents(url: new, resolvingAgainstBaseURL: false),
+              after.scheme == "https", let host = after.host, !host.isEmpty,
+              after.user == nil, after.password == nil, after.query == nil, after.fragment == nil
+        else { return false }
+        // GitHub Pages keeps the path when it moves a project site to a custom domain, except for the
+        // repository prefix ("/gitmorning/v1/x.json" → "/v1/x.json"), so the new path must end with the old file path.
+        let file = before.path.split(separator: "/").suffix(2).joined(separator: "/")
+        return !file.isEmpty && (after.path == before.path || after.path.hasSuffix("/" + file))
+    }
+}
+
+private final class FeedRedirects: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
+    func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(FeedRedirect.allows(from: task.originalRequest?.url, to: request.url) ? request : nil)
+    }
 }
 
 public actor SnapshotHTTPReader {
@@ -63,7 +83,7 @@ public actor SnapshotHTTPReader {
         configuration.timeoutIntervalForRequest = 20
         configuration.timeoutIntervalForResource = 25
         configuration.httpCookieStorage = nil
-        session = URLSession(configuration: configuration, delegate: RejectRedirects(), delegateQueue: nil)
+        session = URLSession(configuration: configuration, delegate: FeedRedirects(), delegateQueue: nil)
     }
     public func load(_ key: SnapshotKey, endpoint: FeedEndpoint) async throws -> Data {
         var request = URLRequest(url: endpoint.url(for: key))

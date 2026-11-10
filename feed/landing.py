@@ -13,6 +13,7 @@ import shutil
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_SITE = "https://ddingddong9.github.io/gitmorning/"
 SPARKLE = "{http://www.andymatuschak.org/xml-namespaces/sparkle}"
 # Published path under assets/ → source in the repository.
 ASSETS = {
@@ -33,14 +34,29 @@ def released_version(appcast):
     return version
 
 
+def site_url(root=ROOT):
+    """The site's public address: the custom domain in web/CNAME once one is connected, else GitHub Pages."""
+    cname = root / "web/CNAME"
+    domain = cname.read_text(encoding="utf-8").strip().lower() if cname.exists() else ""
+    if not domain:
+        return DEFAULT_SITE
+    if "/" in domain or ":" in domain or " " in domain or "." not in domain:
+        raise ValueError(f"web/CNAME must hold only a domain such as gitmorning.app, not {domain!r}")
+    return f"https://{domain}/"
+
+
 def build(output, root=ROOT):
     output = Path(output)
     output.mkdir(parents=True, exist_ok=True)
     version = released_version(root / "distribution/appcast.xml")
+    url = site_url(root)
     for source in (root / "web").iterdir():
         target = output / source.name
+        if source.name == "CNAME":
+            continue  # a setting for this build; Pages takes the domain from the repository settings
         if source.name == "index.html":
-            target.write_text(source.read_text(encoding="utf-8").replace("{{VERSION}}", version), encoding="utf-8")
+            page = source.read_text(encoding="utf-8").replace("{{VERSION}}", version).replace("{{SITE_URL}}", url)
+            target.write_text(page, encoding="utf-8")
         elif source.is_dir():
             shutil.copytree(source, target, dirs_exist_ok=True)  # media/: hero videos and posters
         else:

@@ -45,6 +45,16 @@ struct CoreChecks {
         object.removeValue(forKey: "readmeExcerpt"); object.removeValue(forKey: "summaryFromReadme")
         let decodedOld = try JSONDecoder().decode(Repository.self, from: JSONSerialization.data(withJSONObject: object))
         precondition(decodedOld.readmeExcerpt == nil && decodedOld.summaryFromReadme == nil)
-        print("PASS: 11 core checks — filtering, case-insensitive search, source order, bookmark order, persistence, corrupt-data rejection, README excerpts, brief fallback, older saved data")
+        // The feed may move to a custom domain; only the same file over HTTPS is followed.
+        let feedFile = URL(string: "https://ddingddong9.github.io/gitmorning/v1/daily-all.json")
+        precondition(FeedRedirect.allows(from: feedFile, to: URL(string: "https://gitmorning.app/v1/daily-all.json")))
+        precondition(FeedRedirect.allows(from: feedFile, to: URL(string: "https://www.gitmorning.app/gitmorning/v1/daily-all.json")))
+        precondition(!FeedRedirect.allows(from: feedFile, to: URL(string: "http://gitmorning.app/v1/daily-all.json")))
+        precondition(!FeedRedirect.allows(from: feedFile, to: URL(string: "https://gitmorning.app/v1/weekly-all.json")))
+        precondition(!FeedRedirect.allows(from: feedFile, to: URL(string: "https://gitmorning.app/login")))
+        precondition(!FeedRedirect.allows(from: feedFile, to: URL(string: "https://user:pw@gitmorning.app/v1/daily-all.json")))
+        precondition(!FeedRedirect.allows(from: feedFile, to: URL(string: "https://gitmorning.app/v1/daily-all.json?x=1")))
+        precondition(!FeedRedirect.allows(from: nil, to: URL(string: "https://gitmorning.app/v1/daily-all.json")))
+        print("PASS: 12 core checks — filtering, case-insensitive search, source order, bookmark order, persistence, corrupt-data rejection, README excerpts, brief fallback, older saved data, feed redirects")
     }
 }
