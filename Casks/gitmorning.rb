@@ -17,10 +17,18 @@ cask "gitmorning" do
   depends_on macos: :sonoma
 
   app "GitMorning.app"
+
+  # GitMorning is ad-hoc signed, not notarized, so macOS would block the first launch of the
+  # downloaded app. The archive was already checked against sha256 above. -dr is recursive so
+  # Sparkle's nested helpers (Updater.app, Installer.xpc, Downloader.xpc) can start too.
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/GitMorning.app"]
+  end
+
   uninstall quit: "dev.gitmorning.prototype"
 
   caveats <<~EOS
     On-device summaries require macOS 26+ and enabled Apple Intelligence.
-    Free preview builds are ad-hoc signed and may require macOS approval at first launch.
+    GitMorning is not notarized by Apple; this cask clears the download quarantine after install.
   EOS
 end

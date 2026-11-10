@@ -24,7 +24,7 @@ The normal route is:
 
 A Developer ID signing identity, Apple notarization tools, and authenticated notary access are needed for that route. A free developer account alone does not provide this distribution setup. The owner must perform account/payment/agreements and any credential setup; none has been done automatically.
 
-**Current status:** the preview is ad-hoc signed and not notarized. First launch may require macOS approval. Homebrew installation does not remove this requirement. No quarantine removal or other security bypass is included. No Apple certification claim is made.
+**Current status:** the preview is ad-hoc signed and not notarized. The Homebrew cask checks the archive against its sha256, then removes the download quarantine attribute from the installed app in `postflight` (recursively, so Sparkle's nested helpers can start), so Homebrew installs open without the first-launch block. A ZIP downloaded directly keeps the quarantine and needs **Open Anyway** once. No other security bypass is included. No Apple certification claim is made.
 
 ## Sparkle update signing
 

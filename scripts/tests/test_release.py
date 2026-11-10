@@ -81,7 +81,8 @@ class ReleaseTests(unittest.TestCase):
         self.assertIn('strategy :sparkle', cask)
         self.assertIn('sha256 "' + 'a' * 64 + '"', cask)
         self.assertNotIn('sha256 :no_check', cask)
-        self.assertNotIn('xattr', cask)
+        self.assertIn('postflight_steps do', cask)
+        self.assertIn('run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{appdir}}/GitMorning.app"]', cask)
         with self.assertRaises(ValueError):
             release.cask(metadata, 'placeholder')
 

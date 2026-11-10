@@ -58,7 +58,7 @@ Or download the ZIP from the [latest release](https://github.com/ddingddong9/git
 Requires macOS 14 or later on Apple Silicon.
 
 > [!NOTE]
-> GitMorning is not notarized by Apple yet, so macOS may block the first launch. Open **System Settings → Privacy & Security** and choose **Open Anyway**.
+> GitMorning is not notarized by Apple yet. The Homebrew cask clears the download quarantine after install, so the app opens normally. If you download the ZIP instead, macOS blocks the first launch: choose **Done** (not Move to Trash), then open **System Settings → Privacy & Security** and choose **Open Anyway**.
 
 ## Usage
 
