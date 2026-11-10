@@ -40,7 +40,7 @@ Read [AGENTS.md](../AGENTS.md) first: it holds the project rules and the list of
 
 Every pull request runs CI ([ci.yml](workflows/ci.yml)): the Python collector and release-script tests, the Korean string check, workflow validation (actionlint), and, when app code changes, the Swift checks, parser parity against the live Trending page, `swift test`, and an app build. Pull requests from forks run without repository secrets. A first-time contributor's run starts after the maintainer approves it.
 
-`main` is protected: changes land only through a pull request with CI passing on its latest commit. The maintainer reviews every pull request; an AI review, when there is one, follows the **Code Review Rules** in AGENTS.md and is advice, not approval. Releases are made by the maintainer from a `v*` tag; merging a PR does not publish anything.
+`main` is protected: changes land only through a pull request with CI passing on its latest commit. The maintainer reviews every pull request; [CodeRabbit](https://www.coderabbit.ai) also reviews each pull request automatically (in Korean, configured in [`.coderabbit.yaml`](../.coderabbit.yaml)); it follows the **Code Review Rules** in AGENTS.md and is advice, not approval. Reply to it in the PR, or comment `@coderabbitai review` to ask for another pass. Releases are made by the maintainer from a `v*` tag; merging a PR does not publish anything.
 
 Found a security problem? Please report it privately as described in [SECURITY.md](SECURITY.md). Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 
@@ -53,7 +53,7 @@ By contributing, you agree that your contribution is licensed under the [MIT Lic
 - 버그·아이디어는 이슈 양식으로, 코드 변경은 `main`에서 브랜치를 만들어 PR로 보내 주세요. 먼저 [AGENTS.md](../AGENTS.md)의 규칙을 읽어 주세요.
 - PR 템플릿에 문제·검증 결과·확인하지 못한 점·위험을 적고, 화면이 바뀌면 스크린샷을 붙여 주세요.
 - 새 화면 문구는 `Korean.json`에 한국어를 함께 넣어 주세요(`python3 scripts/check-ui-strings.py`로 확인).
-- 모든 PR은 CI를 통과해야 하고 관리자가 검토한 뒤 머지합니다. 처음 기여하는 분의 CI는 관리자 승인 후 시작됩니다.
+- 모든 PR은 CodeRabbit이 자동으로 한국어 리뷰를 남기고, CI를 통과한 뒤 관리자가 검토해 머지합니다. AI 리뷰는 참고용입니다. 처음 기여하는 분의 CI는 관리자 승인 후 시작됩니다.
 - 트렌딩 파서를 바꾸면 Python(`pipeline/collect.py`)과 Swift(`TrendingReader.swift`), 공유 픽스처를 함께 고쳐 주세요.
 - 바이너리·캐시·API 키·서명 키는 커밋하지 않습니다.
 - 기여한 코드는 MIT 라이선스로 배포됩니다.
