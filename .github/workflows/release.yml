@@ -1,0 +1,108 @@
+name: Release
+# Pushing a vMAJOR.MINOR.PATCH tag on main builds the app, signs the update with the Sparkle
+# Ed25519 private key, and creates a *draft* GitHub Release. Publishing the draft is the
+# manual go-ahead: only then do the ZIP and appcast.xml reach users (the app reads
+# releases/latest/download/appcast.xml). Publishing also starts release-cask.yml.
+#
+# The job runs in the "release" environment, which requires approval and is the only place
+# SPARKLE_PRIVATE_KEY exists. The key is written to a temporary file for the signing step
+# and removed right after.
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 30
+    environment: release
+    permissions:
+      contents: write  # create the draft release and upload its files
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Tag must point at a commit on main
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          git fetch --quiet origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Version and build from the tag and the published appcast
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          curl -fsSL "https://github.com/$REPO/releases/latest/download/appcast.xml" -o "$RUNNER_TEMP/published-appcast.xml"
+          python3 scripts/release-version.py "$TAG" "$RUNNER_TEMP/published-appcast.xml" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+      - name: Release notes must be for this version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          head -1 distribution/release-notes.md | grep -q "^GitMorning $VERSION " \
+            || { echo "::error::distribution/release-notes.md does not start with 'GitMorning $VERSION — …'"; exit 1; }
+      - name: Current Trending lists in the app
+        run: |
+          for list in daily-all weekly-all; do
+            curl -fsSL "https://ddingddong9.github.io/gitmorning/v1/$list.json" -o "$RUNNER_TEMP/$list.json"
+            python3 -c 'import json, sys; d = json.load(open(sys.argv[1])); assert d["schemaVersion"] == 1 and d["status"] == "complete" and d["repositories"], sys.argv[1]' "$RUNNER_TEMP/$list.json"
+            cp "$RUNNER_TEMP/$list.json" "Sources/GitMorning/Resources/Snapshots/$list.json"
+          done
+      - name: Signing tool and key check
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          [ -n "$SPARKLE_PRIVATE_KEY" ] || { echo "::error::SPARKLE_PRIVATE_KEY is not set for the release environment"; exit 1; }
+          mkdir -p .build && swiftc scripts/release-signing.swift -o .build/release-signing
+          umask 077
+          key="$RUNNER_TEMP/sparkle.key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key"
+          derived="$(.build/release-signing public-key "$key")"
+          rm -f "$key"
+          # Users' apps trust only this public key; a different private key would make every update fail.
+          [ "$derived" = "$(tr -d '\n' < distribution/sparkle-public-key.txt)" ] \
+            || { echo "::error::SPARKLE_PRIVATE_KEY does not match distribution/sparkle-public-key.txt"; exit 1; }
+      - name: Build the app
+        env:
+          GITMORNING_VERSION: ${{ steps.version.outputs.version }}
+          GITMORNING_BUILD: ${{ steps.version.outputs.build }}
+          GITMORNING_RELEASE: '1'
+          GITMORNING_UPDATE_FEED: https://github.com/${{ github.repository }}/releases/latest/download/appcast.xml
+        run: |
+          export GITMORNING_UPDATE_PUBLIC_KEY="$(tr -d '\n' < distribution/sparkle-public-key.txt)"
+          zsh scripts/build-app.sh
+          if strings dist/GitMorning.app/Contents/MacOS/GitMorning | grep -q GITMORNING_SNAPSHOT; then
+            echo "::error::release binary contains the DEBUG snapshot hook"; exit 1
+          fi
+      - name: Sign the archive and write the appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+          REPO: ${{ github.repository }}
+        run: |
+          umask 077
+          key="$RUNNER_TEMP/sparkle.key"
+          trap 'rm -f "$key"' EXIT
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key"
+          python3 scripts/prepare-release.py --repository "$REPO" --key-file "$key" \
+            --notes distribution/release-notes.md --output "$RUNNER_TEMP/release"
+          cat "$RUNNER_TEMP/release/SHA256SUMS"
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          out="$RUNNER_TEMP/release"
+          gh release create "$TAG" --draft --verify-tag \
+            --title "$(head -1 distribution/release-notes.md)" --notes-file distribution/release-notes.md \
+            "$out/GitMorning-$VERSION-arm64.zip" "$out/appcast.xml" "$out/SHA256SUMS"
+          echo "Draft created. Review it on the Releases page, then publish to ship $VERSION." >> "$GITHUB_STEP_SUMMARY"
