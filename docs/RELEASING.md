@@ -14,6 +14,51 @@ brew install --cask gitmorning
 
 Sparkle에 버전 비교·건너뛰기 저장·서명 검증·다운로드·설치·재실행을 맡깁니다. 앱을 덮어쓰는 자체 shell 스크립트는 사용하지 않습니다. 앱 기본 설정은 자동 확인 켜짐·자동 설치 꺼짐·시스템 정보 전송 꺼짐입니다.
 
+## 자동 릴리스 (권장)
+
+태그를 푸시하면 GitHub Actions가 빌드·서명·초안 Release까지 만들고, 게시하면 Cask PR을 엽니다. 비용은 0원입니다(공개 저장소의 Actions·macOS 러너·환경 승인은 무료, Apple Developer ID 없음).
+
+```text
+릴리스 노트 PR 머지 → git tag v0.5.7 && git push origin v0.5.7
+  → release.yml (release 환경, 승인 필요)
+      태그가 main 위인지 · 버전이 공개 버전보다 높은지 확인 · 빌드 번호 = 공개 appcast + 1
+      최신 공유 목록 포함 빌드 → 개인키로 ZIP 서명 → appcast·SHA256SUMS → 초안 Release
+  → (직접) 초안 확인 후 게시  ← 이 순간 사용자에게 업데이트가 보임
+  → release-cask.yml: Cask(version·sha256)와 distribution/ 기록을 바꾸는 PR → CI 통과 후 머지
+```
+
+### 키는 어디서 쓰이나
+
+- **개인키** (`SPARKLE_PRIVATE_KEY`, `release` 환경 Secret): 서명 단계에서만 임시 파일(권한 600)로 꺼냈다가 바로 지웁니다. 저장소·로그·산출물에 남지 않습니다. 이 키가 있어야만 기존 앱이 받아들이는 업데이트를 만들 수 있습니다.
+- **공개키** (`distribution/sparkle-public-key.txt`, 앱 `Info.plist`의 `SUPublicEDKey`): 공개돼도 안전합니다. 워크플로는 Secret에서 공개키를 다시 계산해 이 파일과 다르면 중단합니다. 잘못된 키로 서명하면 모든 사용자의 업데이트가 실패하기 때문입니다.
+- **앱의 검증:** Sparkle이 HTTPS로 appcast와 ZIP을 받고, 압축을 풀기 전에 ZIP의 Ed25519 서명을 앱에 들어 있는 공개키로 확인합니다. 맞지 않으면 설치하지 않습니다. Apple 공증과는 별개라, 공증 없이도 업데이트 위조를 막습니다.
+- **새 키를 만들지 마세요.** 기존 사용자 앱에는 지금 공개키만 들어 있어서, 다른 키로 서명한 업데이트는 모두 거부됩니다. 키를 잃으면 사용자가 직접 새로 설치해야 합니다. 개인키를 안전한 곳에 따로 백업하세요.
+
+### appcast 위치
+
+`https://github.com/ddingddong9/gitmorning/releases/latest/download/appcast.xml` (최신 Release의 첨부 파일)을 유지합니다. 모든 사용자 앱에 이 주소가 들어 있고, Release를 게시하는 순간 ZIP과 appcast가 함께 바뀌어 초안 단계에서는 아무것도 공개되지 않습니다. Pages나 raw URL은 Release와 공개 시점이 따로 놀고 주소를 바꾸면 기존 앱이 따라오지 못합니다.
+
+### 한 번만 하는 설정
+
+1. **`release` 환경:** Settings → Environments → New environment `release` → Required reviewers에 본인 → Deployment branches and tags: Selected, 태그 규칙 `v*`.
+2. **개인키 Secret** (내용이 화면에 나오지 않음):
+   ```sh
+   gh secret set SPARKLE_PRIVATE_KEY --env release --repo ddingddong9/gitmorning < .release-secrets/sparkle-ed25519.key
+   ```
+3. **Cask PR 토큰:** Settings → Developer settings → Fine-grained personal access tokens → Repository access: `ddingddong9/gitmorning`만 → Permissions: Contents Read and write, Pull requests Read and write → 만료 1년. 기본 `GITHUB_TOKEN`으로 연 PR에서는 CI가 돌지 않아 보호 규칙의 필수 검사가 끝나지 않으므로 별도 토큰이 필요합니다.
+   ```sh
+   gh secret set CASK_PR_TOKEN --repo ddingddong9/gitmorning
+   ```
+
+### 릴리스할 때마다
+
+1. `distribution/release-notes.md`의 첫 줄을 `GitMorning 0.5.7 — 제목` 형식으로 쓰고 PR로 머지합니다(워크플로가 버전과 첫 줄을 대조합니다).
+2. `git tag v0.5.7 && git push origin v0.5.7` → Actions에서 `release` 환경 승인.
+3. 초안 Release를 확인하고 게시합니다.
+4. 자동으로 열린 "chore: update the cask to 0.5.7" PR을 CI 통과 후 머지합니다.
+
+아래 1~5는 같은 과정을 로컬에서 직접 하는 방법입니다(워크플로를 쓸 수 없을 때).
+
 ## 1. 의존성 준비
 
 macOS 26 SDK와 Swift 개발 도구가 필요합니다. `Package.swift`가 Sparkle **2.10.1** 공식 SwiftPM 바이너리와 SHA-256을 고정합니다. SwiftPM이 HTTPS로 다운로드해 검증합니다. 앱 번들에는 Sparkle과 helper·라이선스를 모두 보존합니다.

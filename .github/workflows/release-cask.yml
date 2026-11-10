@@ -1,0 +1,58 @@
+name: Release cask
+# After a release is published, open a pull request that points the Homebrew cask at it
+# (version, build, SHA-256) and records its appcast. main is protected, so the change goes
+# through a PR and CI like any other.
+#
+# CASK_PR_TOKEN is a fine-grained personal access token for this repository only, with
+# Contents and Pull requests read/write. A PR opened with the default GITHUB_TOKEN would not
+# start CI (GitHub does not let workflows trigger workflows), so its required checks would
+# never finish.
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+jobs:
+  cask:
+    if: startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          token: ${{ secrets.CASK_PR_TOKEN }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Read the published release files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release download "$TAG" --pattern appcast.xml --pattern SHA256SUMS --dir "$RUNNER_TEMP/release"
+      - name: Update the cask and release records
+        id: update
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          python3 scripts/update-cask.py --appcast "$RUNNER_TEMP/release/appcast.xml" \
+            --sums "$RUNNER_TEMP/release/SHA256SUMS" --repository "$REPO" >> "$GITHUB_OUTPUT"
+          git diff --stat
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ secrets.CASK_PR_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+          VERSION: ${{ steps.update.outputs.version }}
+          BUILD: ${{ steps.update.outputs.build }}
+          SHA: ${{ steps.update.outputs.sha256 }}
+        run: |
+          [ -n "$GH_TOKEN" ] || { echo "::error::CASK_PR_TOKEN is not set"; exit 1; }
+          if git diff --quiet; then echo "Cask already points at $VERSION"; exit 0; fi
+          branch="release/cask-$TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "chore: update the cask to $VERSION" -m "Version $VERSION, build $BUILD, SHA-256 $SHA, from the published $TAG release."
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" --title "chore: update the cask to $VERSION" \
+            --body "Points \`Casks/gitmorning.rb\` at the published [$TAG](https://github.com/${{ github.repository }}/releases/tag/$TAG) release (build $BUILD, SHA-256 \`$SHA\`) and records its appcast in \`distribution/\`. Opened automatically by release-cask.yml; merge once CI passes."
