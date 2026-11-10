@@ -42,6 +42,20 @@ jobs:
           python-version: '3.12'
       - run: python -m unittest discover -s pipeline/tests -v
       - run: python -m unittest discover -s scripts/tests -v
+      - name: Every interface string has a Korean entry
+        run: python3 scripts/check-ui-strings.py
+  workflows:
+    # Catches workflow mistakes (bad expressions, shell errors, unknown keys) before they reach main.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - name: Validate GitHub Actions workflows
+        run: '"$(go env GOPATH)/bin/actionlint" -color'
   live-collection:
     runs-on: ubuntu-latest
     steps:

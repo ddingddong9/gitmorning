@@ -1,0 +1,84 @@
+name: Bug report
+description: Something in GitMorning does not work as expected. (버그 신고)
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search [existing issues](https://github.com/ddingddong9/gitmorning/issues) first. Korean or English is fine. (한국어로 작성해도 됩니다.)
+        This is public: remove private file paths, notes, and anything personal from screenshots and logs.
+  - type: input
+    id: app-version
+    attributes:
+      label: GitMorning version
+      description: Shown at the bottom of Settings. For a source build, add the commit or branch.
+      placeholder: "0.5.7"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "macOS 26.1, Apple Silicon"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: How did you install?
+      options:
+        - Homebrew (ddingddong9/apps/gitmorning)
+        - Homebrew (older ddingddong9/gitmorning tap)
+        - ZIP from GitHub Releases
+        - Updated through the app
+        - Built from source
+        - Other or not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Today's or Weekly Trending list
+        - Project details or README preview
+        - Description translation or Korean explanation
+        - Morning brief or menu bar
+        - Saved projects, notes, or export
+        - Release alerts
+        - Settings or appearance
+        - Updates or install
+        - Other or not sure
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened?
+      description: The exact message or behavior, and how often it happens.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open GitMorning
+        2. Choose ...
+        3. See ...
+      description: If it does not happen every time, describe what you did just before.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshots or other context
+      description: Optional. The repository name involved helps for list, translation, and README problems.
