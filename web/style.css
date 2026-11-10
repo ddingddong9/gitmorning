@@ -82,7 +82,10 @@ body {
   margin: 0; background: transparent; color: var(--text);
   font: 17px/1.6 var(--font); -webkit-font-smoothing: antialiased;
 }
-:lang(ko) body, body:lang(ko) { word-break: keep-all; }
+/* Korean breaks only between words; paragraphs avoid a lone word on the last line, headings balance their lines. */
+:lang(ko) { word-break: keep-all; overflow-wrap: break-word; }
+p, li, summary, .feature h3 { text-wrap: pretty; }
+h1, h2 { text-wrap: balance; }
 a { color: inherit; }
 img { max-width: 100%; height: auto; display: block; }
 code { font-family: var(--mono); font-size: 0.9em; }
