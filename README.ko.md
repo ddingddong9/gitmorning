@@ -48,9 +48,7 @@
 ## 설치
 
 ```sh
-brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
-brew trust ddingddong9/gitmorning   # Homebrew 7 이상은 외부 tap을 한 번 신뢰해야 합니다
-brew install --cask gitmorning
+brew install --cask ddingddong9/apps/gitmorning
 ```
 
 또는 [최신 릴리스](https://github.com/ddingddong9/gitmorning/releases/latest)에서 ZIP을 받아 **GitMorning.app**을 응용 프로그램 폴더로 옮기세요.

@@ -48,9 +48,7 @@ Checking [GitHub Trending](https://github.com/trending) every day is easy to for
 ## Install
 
 ```sh
-brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
-brew trust ddingddong9/gitmorning   # Homebrew 7+ asks you to trust a third-party tap once
-brew install --cask gitmorning
+brew install --cask ddingddong9/apps/gitmorning
 ```
 
 Or download the ZIP from the [latest release](https://github.com/ddingddong9/gitmorning/releases/latest) and move **GitMorning.app** to Applications.
