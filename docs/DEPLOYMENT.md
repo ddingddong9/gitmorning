@@ -41,6 +41,23 @@ UI, 수집·요약 로직, 외부 연동, 저장 책임을 코드에서 분리�
 
 현재 앱 번들은 로컬 개발용 임시 서명 상태다. 공개 배포는 Developer ID 서명·공증을 거쳐 DMG/ZIP을 제공하거나 Mac App Store 제출 경로를 선택한다. 웹에서 데이터를 제공하는 것과 앱 설치 파일을 배포하는 것은 별도 작업이다.
 
+## 웹사이트와 커스텀 도메인
+
+웹사이트(`web/`)는 피드와 같은 GitHub Pages 사이트의 첫 화면에 배포됩니다(`feed/landing.py`, `publish-trending.yml`). 지금 주소는 `https://ddingddong9.github.io/gitmorning/`이고 피드는 그 아래 `v1/`입니다. 사이트 주소는 `web/CNAME` 하나로 정합니다. 비어 있으면 GitHub Pages 주소를 씁니다.
+
+### 도메인을 연결할 때 (한 번만)
+
+1. **앱 먼저:** 도메인을 연결하면 GitHub가 `ddingddong9.github.io/gitmorning/…`을 새 도메인으로 리디렉트합니다. 0.5.8부터의 앱은 같은 피드 파일로 가는 HTTPS 리디렉트를 따라갑니다(`FeedRedirect`). 0.5.7 이하는 따라가지 않아 GitHub Trending을 직접 읽습니다. 목록은 계속 보이지만 연속 트렌딩·README 요약이 빠집니다. 그래서 0.5.8 이상을 출시하고 사용자 대부분이 업데이트한 뒤(앱이 자동으로 알림) 연결합니다.
+2. **도메인 확인(가로채기 방지):** GitHub 계정 Settings → Pages → **Add a domain**에 도메인을 넣고 안내하는 TXT 레코드를 DNS에 추가해 Verify합니다.
+3. **DNS:** 도메인 업체의 DNS 설정에 다음을 추가합니다.
+   - 루트 도메인(`gitmorning.app`): A `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`. IPv6를 쓰면 AAAA `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
+   - `www`: CNAME `ddingddong9.github.io`
+4. **이 저장소:** `web/CNAME`에 도메인 한 줄(예: `gitmorning.app`)을 넣는 PR을 머지합니다. 사이트의 공유 미리보기·정식 주소가 새 도메인으로 바뀝니다.
+5. **Pages 설정:** 저장소 Settings → Pages → Custom domain에 같은 도메인을 넣고 Save합니다. 인증서가 발급되면(수 분~하루) **Enforce HTTPS**를 켭니다. Actions로 배포하므로 Pages는 `CNAME` 파일이 아니라 이 설정을 씁니다.
+6. **확인:** `https://<도메인>/`과 `https://<도메인>/v1/manifest.json`이 열리고, `https://ddingddong9.github.io/gitmorning/v1/manifest.json`이 새 도메인으로 리디렉트되는지 봅니다. 앱의 공유 피드 표시(목록 아래 "공용 데이터")가 그대로인지 확인합니다.
+
+도메인을 해제하면 Pages 주소로 되돌아가고 앱은 원래 주소를 그대로 읽습니다. 피드를 읽는 다른 곳(`release.yml`, `feed/build_site.py`, `pipeline/canary.py`, 사이트의 실시간 목록)은 리디렉트를 따라가므로 고칠 필요가 없습니다.
+
 ## 근거
 
 - https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows
@@ -48,3 +65,5 @@ UI, 수집·요약 로직, 외부 연동, 저장 책임을 코드에서 분리�
 - https://developers.cloudflare.com/r2/platform/limits/
 - https://developer.apple.com/macos/distribution
 - https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution
+- https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site
+- https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/verifying-your-custom-domain-for-github-pages

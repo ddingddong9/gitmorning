@@ -24,11 +24,13 @@ from pathlib import Path
 import sys
 import time
 import urllib.request
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from pipeline.collect import LANGUAGES, PERIODS, CollectionError, publish, readme_excerpt, readme_markdown, request, snapshot, trending_url  # noqa: E402
 import hashlib  # noqa: E402
 from pipeline.history import history_name, merge as merge_history  # noqa: E402
+from feed.landing import build as build_landing  # noqa: E402
 
 PUBLISHED = "https://ddingddong9.github.io/gitmorning/v1/"
 README_CACHE = "readmes.json"
@@ -147,10 +149,15 @@ def main():
     manifest = {"schemaVersion": 1, "generatedAt": datetime.now(timezone.utc).isoformat(), "files": files, "history": histories}
     (directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     (directory / README_CACHE).write_text(json.dumps({"schemaVersion": 1, "readmes": readmes}, ensure_ascii=False) + "\n", encoding="utf-8")
-    (Path(args.output) / "index.html").write_text(
-        "<!doctype html><meta charset=utf-8><title>GitMorning feed</title>"
-        "<p>Public GitHub Trending snapshots for the GitMorning Mac app: <a href=v1/manifest.json>v1/manifest.json</a>.</p>\n",
-        encoding="utf-8")
+    try:
+        build_landing(args.output)  # the website at the site root; the feed stays under v1/
+    except (OSError, ValueError, ET.ParseError) as exc:
+        # The apps need the feed; never let the website block it.
+        print(f"website not built ({exc}); publishing the feed with a plain index", file=sys.stderr)
+        (Path(args.output) / "index.html").write_text(
+            "<!doctype html><meta charset=utf-8><title>GitMorning</title>"
+            "<p><a href=https://github.com/ddingddong9/gitmorning>GitMorning</a> · feed: <a href=v1/manifest.json>v1/manifest.json</a></p>\n",
+            encoding="utf-8")
     print(f"fresh {fresh}, kept {kept}, missing {len(missing)}; READMEs fetched {fetched}, unchanged {unchanged}, failed {failed}")
 
 

@@ -14,7 +14,7 @@ See what's new and rising today, read what each project does in your language, a
 [![Downloads](https://img.shields.io/github/downloads/ddingddong9/gitmorning/total?label=downloads)](https://github.com/ddingddong9/gitmorning/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-**English** · [한국어](README.ko.md)
+**English** · [한국어](README.ko.md) · [Website](https://ddingddong9.github.io/gitmorning/)
 
 <img src="docs/demo.gif" alt="GitMorning in 13 seconds: the morning brief in the menu bar, then the main window" width="820" />
 
