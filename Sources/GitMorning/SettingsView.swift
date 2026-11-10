@@ -10,11 +10,7 @@ struct SettingsView: View {
     @AppStorage("appearance") private var appearance = Appearance.light.rawValue
     @AppStorage("readingSize") private var readingSize = ReadingSize.standard.rawValue
     @AppStorage("autoTranslateDescriptions") private var autoTranslateDescriptions = true
-    @AppStorage("feedBaseURL") private var baseURL = ""
     @ViewState<SettingsTab> private var tab = .general
-    @ViewState<String> private var draft = ""
-    @ViewState<String> private var feedback = ""
-    @ViewState<Bool> private var invalidAddress = false
     @AppStorage("showMenuBar") private var showMenuBar = true
     @AppStorage("briefNotification") private var briefNotification = false
     @AppStorage("interestLanguages") private var interestLanguages = ""
@@ -28,7 +24,7 @@ struct SettingsView: View {
     @ViewState<Bool> private var opensAtLogin = LoginItem.isEnabled
     @ViewState<String> private var loginProblem = ""
 
-    enum SettingsTab: CaseIterable { case general, brief, language, updates, data }
+    enum SettingsTab: CaseIterable { case general, brief, language, updates }
     init(tab: SettingsTab = .general) { _tab = ViewState(initialValue: tab) }
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Development"
@@ -45,8 +41,6 @@ struct SettingsView: View {
                     .tabItem { Label(ui("Language & AI"), systemImage: "globe") }
                 updates.tag(SettingsTab.updates)
                     .tabItem { Label(ui("Updates"), systemImage: "arrow.triangle.2.circlepath") }
-                data.tag(SettingsTab.data)
-                    .tabItem { Label(ui("Data"), systemImage: "externaldrive") }
             }
             Divider()
             HStack {
@@ -60,7 +54,6 @@ struct SettingsView: View {
         .font(typography.body)
         .frame(width: 640, height: 560)
         .onAppear {
-            draft = baseURL
             appearance = Appearance.fromStored(appearance).rawValue
             readingSize = ReadingSize.fromStored(readingSize).rawValue
         }
@@ -199,48 +192,9 @@ struct SettingsView: View {
         }.formStyle(.grouped)
     }
 
-    private var data: some View {
-        Form {
-            Section {
-                Label(ui(baseURL.isEmpty ? "Shared GitMorning feed" : "Custom HTTPS feed"), systemImage: "externaldrive")
-            } header: { Text(ui("Data source")) }
-            Section {
-                TextField(ui("HTTPS feed address"), text: $draft, prompt: Text(ui("https://example.com/snapshots")))
-                    .textFieldStyle(.roundedBorder).accessibilityIdentifier("feedBaseURL")
-                HStack {
-                    Button(ui("Apply address"), action: applyAddress)
-                        .accessibilityIdentifier("settingsApplyFeed")
-                    Button(ui("Use the shared feed")) {
-                        draft = ""
-                        applyAddress()
-                    }.disabled(baseURL.isEmpty && draft.isEmpty)
-                }
-                if !feedback.isEmpty {
-                    Label(ui(feedback), systemImage: invalidAddress ? "exclamationmark.circle" : "checkmark.circle")
-                        .foregroundStyle(invalidAddress ? Color.orange : Color.secondary)
-                        .accessibilityIdentifier("feedURLFeedback")
-                }
-            } header: { Text(ui("Custom feed")) }
-        }.formStyle(.grouped)
-    }
-
     /// Grouped-form footers wrap with trailing alignment on macOS; keep them left-aligned under the section.
     private func footnote(_ text: String) -> some View {
         Text(ui(text)).foregroundStyle(.secondary).multilineTextAlignment(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func applyAddress() {
-        let value = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-        do {
-            if !value.isEmpty { _ = try FeedEndpoint(value) }
-            baseURL = value
-            draft = value
-            invalidAddress = false
-            feedback = value.isEmpty ? "Using the shared feed with GitHub as backup and an offline cache." : "Address applied. Refresh the list to check the feed."
-        } catch {
-            invalidAddress = true
-            feedback = "Enter an HTTPS folder URL without credentials, a query, or a fragment."
-        }
     }
 }

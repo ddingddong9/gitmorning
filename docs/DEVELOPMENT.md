@@ -37,7 +37,14 @@ README는 GitHub 공식 API에서 인증 없이 읽으므로 인터넷 연결과
 
 ## 데이터 갱신 주소
 
-설정 → 데이터 갱신에서 JSON을 제공하는 HTTPS 폴더 주소를 입력하고 ‘주소 적용’을 누릅니다.
+공유 피드 대신 직접 운영하는 피드를 쓰려면 터미널에서 HTTPS 폴더 주소를 지정하고 앱을 다시 엽니다(설정 화면에는 없습니다). 지우면 공유 피드로 돌아갑니다.
+
+```sh
+defaults write dev.gitmorning.prototype feedBaseURL https://data.example.com/snapshots
+defaults delete dev.gitmorning.prototype feedBaseURL
+```
+
+폴더에는 다음 파일이 있어야 합니다.
 
 ```text
 https://data.example.com/snapshots/daily-all.json
