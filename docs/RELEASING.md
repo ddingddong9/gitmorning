@@ -5,10 +5,10 @@
 ## 사용자 경험
 
 ```sh
-brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
-brew trust ddingddong9/gitmorning   # Homebrew 7+
-brew install --cask gitmorning
+brew install --cask ddingddong9/apps/gitmorning
 ```
+
+한 줄 설치용 tap은 Cask만 든 공개 저장소 `ddingddong9/homebrew-apps`입니다. 이름이 `homebrew-`로 시작해 Homebrew가 저장소를 스스로 찾고, 전체 이름(`사용자/tap/cask`)으로 설치하면 그 Cask를 자동으로 신뢰합니다. 원본 Cask는 이 저장소의 `Casks/gitmorning.rb`이고, 릴리스 워크플로가 같은 파일을 homebrew-apps에 복사합니다. 예전 방식(`brew tap ddingddong9/gitmorning <URL>`)으로 tap한 사용자도 같은 Cask를 계속 받습니다.
 
 앱의 Sparkle 표준 업데이트 창이 새 버전·릴리스 노트를 표시합니다. 사용자가 설치·재실행, 이번 버전 건너뛰기, 나중에 알림을 선택합니다. 단계·시스템 언어에 따라 버튼 이름이 달라집니다. 메뉴의 ‘업데이트 확인…’은 건너뛴 버전도 직접 확인할 수 있습니다.
 
@@ -45,7 +45,7 @@ Sparkle에 버전 비교·건너뛰기 저장·서명 검증·다운로드·설�
    ```sh
    gh secret set SPARKLE_PRIVATE_KEY --env release --repo ddingddong9/gitmorning < .release-secrets/sparkle-ed25519.key
    ```
-3. **Cask PR 토큰:** Settings → Developer settings → Fine-grained personal access tokens → Repository access: `ddingddong9/gitmorning`만 → Permissions: Contents Read and write, Pull requests Read and write → 만료 1년. 기본 `GITHUB_TOKEN`으로 연 PR에서는 CI가 돌지 않아 보호 규칙의 필수 검사가 끝나지 않으므로 별도 토큰이 필요합니다.
+3. **Cask PR 토큰:** Settings → Developer settings → Fine-grained personal access tokens → Repository access: `ddingddong9/gitmorning`과 `ddingddong9/homebrew-apps`만 → Permissions: Contents Read and write, Pull requests Read and write → 만료 1년. 기본 `GITHUB_TOKEN`으로 연 PR에서는 CI가 돌지 않아 보호 규칙의 필수 검사가 끝나지 않고, 다른 저장소(homebrew-apps)에 푸시할 수도 없으므로 별도 토큰이 필요합니다.
    ```sh
    gh secret set CASK_PR_TOKEN --repo ddingddong9/gitmorning
    ```
@@ -55,7 +55,7 @@ Sparkle에 버전 비교·건너뛰기 저장·서명 검증·다운로드·설�
 1. `distribution/release-notes.md`의 첫 줄을 `GitMorning 0.5.7 — 제목` 형식으로 쓰고 PR로 머지합니다(워크플로가 버전과 첫 줄을 대조합니다).
 2. `git tag v0.5.7 && git push origin v0.5.7` → Actions에서 `release` 환경 승인.
 3. 초안 Release를 확인하고 게시합니다.
-4. 자동으로 열린 "chore: update the cask to 0.5.7" PR을 CI 통과 후 머지합니다.
+4. 자동으로 열린 "chore: update the cask to 0.5.7" PR을 CI 통과 후 머지합니다. homebrew-apps는 같은 워크플로가 바로 갱신합니다.
 
 아래 1~5는 같은 과정을 로컬에서 직접 하는 방법입니다(워크플로를 쓸 수 없을 때).
 
@@ -129,17 +129,15 @@ python3 scripts/prepare-release.py \
 1. 이 저장소에 GitHub Release `v0.4.0` 초안을 만듭니다. `distribution/release-notes.md`·`distribution/appcast.xml`은 같은 PR에서 갱신합니다.
 2. 검증된 ZIP, `appcast.xml`, `SHA256SUMS`를 첨부합니다. 개인키·소스 작업 폴더는 첨부하지 않습니다.
 3. 앱을 설치한 별도 테스트 환경에서 공개 피드 조회·Ed25519 검증을 확인합니다.
-4. Release를 발행한 뒤 생성된 Cask를 루트 `Casks/gitmorning.rb`에 반영합니다(Homebrew tap이 이 경로를 읽습니다). `main`은 보호돼 있어 직접 푸시할 수 없으니, Cask 변경도 PR로 올리고 CI 통과 후 머지합니다. 기존 사용자에게는 Release의 최신 appcast가 갱신되어 전달됩니다.
+4. Release를 발행한 뒤 생성된 Cask를 루트 `Casks/gitmorning.rb`와 `ddingddong9/homebrew-apps`의 `Casks/gitmorning.rb`에 반영합니다(두 tap이 이 경로를 읽습니다). `main`은 보호돼 있어 직접 푸시할 수 없으니, Cask 변경도 PR로 올리고 CI 통과 후 머지합니다. 기존 사용자에게는 Release의 최신 appcast가 갱신되어 전달됩니다.
 5. 익명 HTTPS 다운로드와 아래 명령을 검증한 후 README의 배포 준비 중 표시를 제거합니다.
 
 ```sh
-brew tap ddingddong9/gitmorning https://github.com/ddingddong9/gitmorning
-brew trust ddingddong9/gitmorning   # Homebrew 7+
-brew info --cask gitmorning
-brew install --cask gitmorning
+brew info --cask ddingddong9/apps/gitmorning
+brew install --cask ddingddong9/apps/gitmorning
 ```
 
-공개 저장소 이름에 `homebrew-` 접두사가 없으므로 tap에는 저장소 URL을 함께 적어야 합니다. Homebrew 7부터는 외부 tap의 Cask를 불러오기 전에 `brew trust`로 한 번 신뢰해야 합니다(2026-11-04 확인).
+이 저장소(`gitmorning`)는 이름에 `homebrew-` 접두사가 없어 직접 tap하려면 URL과 `brew trust`가 필요합니다. 그래서 한 줄 설치는 homebrew-apps로 안내합니다. Homebrew 7은 `brew install`에 전체 이름을 주면 그 Cask를 신뢰 목록에 자동으로 넣습니다(2026-11-10 Homebrew 7.0.12 소스 `cmd/install.rb`에서 확인).
 
 일반 `brew upgrade`는 앱 자체 업데이트 여부를 고려합니다. 사용자가 명시적으로 `brew upgrade --cask gitmorning`을 실행할 수도 있습니다. `zap`이나 보관함 삭제는 기본 제거 동작에 넣지 않습니다.
 

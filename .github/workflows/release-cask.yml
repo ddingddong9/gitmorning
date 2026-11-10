@@ -1,12 +1,14 @@
 name: Release cask
 # After a release is published, open a pull request that points the Homebrew cask at it
 # (version, build, SHA-256) and records its appcast. main is protected, so the change goes
-# through a PR and CI like any other.
+# through a PR and CI like any other. The same cask is then pushed to the one-line install
+# tap, <owner>/homebrew-apps (`brew install --cask <owner>/apps/gitmorning`).
 #
-# CASK_PR_TOKEN is a fine-grained personal access token for this repository only, with
-# Contents and Pull requests read/write. A PR opened with the default GITHUB_TOKEN would not
-# start CI (GitHub does not let workflows trigger workflows), so its required checks would
-# never finish.
+# CASK_PR_TOKEN is a fine-grained personal access token for this repository and
+# homebrew-apps only, with Contents read/write (both) and Pull requests read/write. A PR
+# opened with the default GITHUB_TOKEN would not start CI (GitHub does not let workflows
+# trigger workflows), so its required checks would never finish; the default token also
+# cannot push to another repository.
 on:
   release:
     types: [published]
@@ -56,3 +58,20 @@ jobs:
           git push origin "$branch"
           gh pr create --base main --head "$branch" --title "chore: update the cask to $VERSION" \
             --body "Points \`Casks/gitmorning.rb\` at the published [$TAG](https://github.com/${{ github.repository }}/releases/tag/$TAG) release (build $BUILD, SHA-256 \`$SHA\`) and records its appcast in \`distribution/\`. Opened automatically by release-cask.yml; merge once CI passes."
+      - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/homebrew-apps
+          token: ${{ secrets.CASK_PR_TOKEN }}
+          path: homebrew-apps
+      - name: Update the one-line install tap
+        env:
+          VERSION: ${{ steps.update.outputs.version }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          cp Casks/gitmorning.rb homebrew-apps/Casks/gitmorning.rb
+          cd homebrew-apps
+          if git diff --quiet; then echo "homebrew-apps already points at $VERSION"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Update GitMorning to $VERSION" -m "From the published ${{ github.repository }} $TAG release."
+          git push origin HEAD:main
