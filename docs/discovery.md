@@ -54,8 +54,7 @@ Status: development build. Settings → Morning brief.
 Stored in `Application Support/GitMorning/brief-v1.json` (derived data; an unreadable file is replaced by the next brief).
 
 ```sh
-swiftc Sources/GitMorningCore/*.swift scripts/check-brief.swift -o .build/check-brief
-.build/check-brief
+swift test --disable-sandbox --filter MorningBriefTests
 ```
 
 ## README requests and GitHub's anonymous limit

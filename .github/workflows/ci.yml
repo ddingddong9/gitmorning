@@ -115,8 +115,6 @@ jobs:
           .build/check-discovery
           swiftc Sources/GitMorningCore/*.swift scripts/check-translations.swift -o .build/check-translations
           .build/check-translations
-          swiftc Sources/GitMorningCore/*.swift scripts/check-brief.swift -o .build/check-brief
-          .build/check-brief
           swiftc Sources/GitMorningCore/*.swift scripts/check-readme.swift -o .build/check-readme
           .build/check-readme
           swiftc Sources/GitMorningCore/*.swift scripts/check-source.swift -o .build/check-source
@@ -125,8 +123,6 @@ jobs:
           .build/check-core
           swiftc Sources/GitMorningCore/*.swift scripts/check-readme-variants.swift -o .build/check-readme-variants
           .build/check-readme-variants
-          swiftc Sources/GitMorningCore/*.swift scripts/check-history.swift -o .build/check-history
-          .build/check-history
           swiftc Sources/GitMorningCore/*.swift scripts/check-export.swift -o .build/check-export
           .build/check-export
           swiftc Sources/GitMorningCore/*.swift scripts/check-interests.swift -o .build/check-interests
