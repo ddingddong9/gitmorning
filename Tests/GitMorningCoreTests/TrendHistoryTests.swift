@@ -39,6 +39,8 @@ struct TrendHistoryTests {
     func invalidHistoriesAreRejected(_ scenario: InvalidHistory) throws {
         let data: Data
         switch scenario {
+        case .unsupportedVersion:
+            data = try historyData([day("2026-11-06", ["a/one": 1])], schemaVersion: 2)
         case .otherLanguage:
             data = try historyData([day("2026-11-06", ["a/one": 1])], language: "Go")
         case .unsortedDays:
@@ -54,7 +56,7 @@ struct TrendHistoryTests {
     }
 
     enum InvalidHistory: CaseIterable, Sendable {
-        case otherLanguage, unsortedDays, nonPositiveRank, invalidDate
+        case unsupportedVersion, otherLanguage, unsortedDays, nonPositiveRank, invalidDate
     }
 
     private func sampleHistory() throws -> TrendHistory {
@@ -67,8 +69,8 @@ struct TrendHistoryTests {
         ["date": date, "collectedAt": date + "T08:00:00+00:00", "ranks": ranks]
     }
 
-    private func historyData(_ days: [[String: Any]], language: String = "all") throws -> Data {
-        try JSONSerialization.data(withJSONObject: ["schemaVersion": 1, "period": "daily", "languageFilter": language,
+    private func historyData(_ days: [[String: Any]], language: String = "all", schemaVersion: Int = 1) throws -> Data {
+        try JSONSerialization.data(withJSONObject: ["schemaVersion": schemaVersion, "period": "daily", "languageFilter": language,
                                                   "updatedAt": "2026-11-06T08:00:00+00:00", "days": days])
     }
 }
